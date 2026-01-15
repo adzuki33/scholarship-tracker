@@ -1,17 +1,41 @@
 import { useState, useEffect, useCallback } from 'react';
 import ScholarshipList from './components/ScholarshipList';
 import ScholarshipForm from './components/ScholarshipForm';
-import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship } from './db/indexeddb';
+import ChecklistView from './components/ChecklistView';
+import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems } from './db/indexeddb';
 
 function App() {
   const [scholarships, setScholarships] = useState([]);
   const [view, setView] = useState('list');
   const [editingScholarship, setEditingScholarship] = useState(null);
+  const [currentChecklistScholarship, setCurrentChecklistScholarship] = useState(null);
+  const [checklistItems, setChecklistItems] = useState([]);
+  const [checklistItemsByScholarship, setChecklistItemsByScholarship] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadScholarships();
+    loadAllChecklistItems();
   }, []);
+
+  const loadAllChecklistItems = async () => {
+    try {
+      const itemsMap = {};
+      for (const scholarship of scholarships) {
+        const items = await getChecklistItems(scholarship.id);
+        itemsMap[scholarship.id] = items;
+      }
+      setChecklistItemsByScholarship(itemsMap);
+    } catch (error) {
+      console.error('Error loading checklist items:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (scholarships.length > 0) {
+      loadAllChecklistItems();
+    }
+  }, [scholarships]);
 
   const loadScholarships = async () => {
     try {
@@ -69,7 +93,73 @@ function App() {
   const handleCancel = useCallback(() => {
     setView('list');
     setEditingScholarship(null);
+    setCurrentChecklistScholarship(null);
+    setChecklistItems([]);
   }, []);
+
+  const handleViewChecklist = useCallback(async (scholarshipId) => {
+    const scholarship = scholarships.find(s => s.id === scholarshipId);
+    if (scholarship) {
+      setCurrentChecklistScholarship(scholarship);
+      setView('checklist');
+      try {
+        const items = await getChecklistItems(scholarshipId);
+        setChecklistItems(items);
+      } catch (error) {
+        console.error('Error loading checklist items:', error);
+        setChecklistItems([]);
+      }
+    }
+  }, [scholarships]);
+
+  const handleCreateChecklistItem = useCallback(async (data) => {
+    if (!currentChecklistScholarship) return;
+    try {
+      await createChecklistItem(currentChecklistScholarship.id, data);
+      const items = await getChecklistItems(currentChecklistScholarship.id);
+      setChecklistItems(items);
+      await loadAllChecklistItems();
+    } catch (error) {
+      console.error('Error creating checklist item:', error);
+    }
+  }, [currentChecklistScholarship, loadAllChecklistItems]);
+
+  const handleUpdateChecklistItem = useCallback(async (id, data) => {
+    try {
+      await updateChecklistItem(id, data);
+      if (currentChecklistScholarship) {
+        const items = await getChecklistItems(currentChecklistScholarship.id);
+        setChecklistItems(items);
+      }
+      await loadAllChecklistItems();
+    } catch (error) {
+      console.error('Error updating checklist item:', error);
+    }
+  }, [currentChecklistScholarship, loadAllChecklistItems]);
+
+  const handleDeleteChecklistItem = useCallback(async (id) => {
+    try {
+      await deleteChecklistItem(id);
+      if (currentChecklistScholarship) {
+        const items = await getChecklistItems(currentChecklistScholarship.id);
+        setChecklistItems(items);
+      }
+      await loadAllChecklistItems();
+    } catch (error) {
+      console.error('Error deleting checklist item:', error);
+    }
+  }, [currentChecklistScholarship, loadAllChecklistItems]);
+
+  const handleReorderChecklistItems = useCallback(async (items) => {
+    if (!currentChecklistScholarship) return;
+    try {
+      await reorderChecklistItems(currentChecklistScholarship.id, items);
+      setChecklistItems(items);
+      await loadAllChecklistItems();
+    } catch (error) {
+      console.error('Error reordering checklist items:', error);
+    }
+  }, [currentChecklistScholarship, loadAllChecklistItems]);
 
   const handleSave = useCallback((data) => {
     if (editingScholarship) {
@@ -120,6 +210,18 @@ function App() {
             onEdit={handleEdit}
             onDelete={handleDeleteScholarship}
             onAddNew={handleAddNew}
+            onViewChecklist={handleViewChecklist}
+            checklistItemsByScholarship={checklistItemsByScholarship}
+          />
+        ) : view === 'checklist' ? (
+          <ChecklistView
+            scholarship={currentChecklistScholarship}
+            onBack={handleCancel}
+            checklistItems={checklistItems}
+            onCreateItem={handleCreateChecklistItem}
+            onUpdateItem={handleUpdateChecklistItem}
+            onDeleteItem={handleDeleteChecklistItem}
+            onReorderItems={handleReorderChecklistItems}
           />
         ) : (
           <ScholarshipForm

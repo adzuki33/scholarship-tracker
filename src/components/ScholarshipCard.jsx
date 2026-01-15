@@ -8,7 +8,7 @@ const statusColors = {
   'Result': 'bg-green-100 text-green-800',
 };
 
-const ScholarshipCard = ({ scholarship, onEdit, onDelete }) => {
+const ScholarshipCard = ({ scholarship, onEdit, onDelete, onViewChecklist, checklistItems }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -21,6 +21,10 @@ const ScholarshipCard = ({ scholarship, onEdit, onDelete }) => {
   const deadlineClass = daysUntilDeadline < 7 ? 'text-red-600 font-semibold' : 
                        daysUntilDeadline < 30 ? 'text-yellow-600 font-semibold' : 
                        'text-gray-600';
+
+  const completedItems = checklistItems?.filter(item => item.checked).length || 0;
+  const totalItems = checklistItems?.length || 0;
+  const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-5">
@@ -60,7 +64,30 @@ const ScholarshipCard = ({ scholarship, onEdit, onDelete }) => {
         </div>
       </div>
 
+      {totalItems > 0 && (
+        <div className="mb-4 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">
+              {completedItems} of {totalItems} requirements completed
+            </span>
+            <span className="text-sm font-medium text-gray-700">{progress}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2 pt-3 border-t border-gray-100">
+        <button
+          onClick={() => onViewChecklist(scholarship.id)}
+          className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+        >
+          View Checklist
+        </button>
         <button
           onClick={() => onEdit(scholarship)}
           className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
