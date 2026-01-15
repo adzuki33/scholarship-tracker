@@ -50,8 +50,7 @@ scholarship-tracker/
 ├── index.html                    # HTML entry point
 ├── package.json                  # Dependencies and scripts
 ├── vite.config.js               # Vite configuration
-├── tailwind.config.js           # Tailwind CSS configuration
-└── postcss.config.js            # PostCSS configuration for Tailwind
+└── tailwind.config.js           # Tailwind CSS configuration
 ```
 
 ## Data Storage
