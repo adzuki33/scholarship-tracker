@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 
-const ScholarshipList = ({ scholarships, onEdit, onDelete, onAddNew }) => {
+const ScholarshipList = ({ scholarships, onEdit, onDelete, onAddNew, onViewChecklist, checklistItemsByScholarship }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -58,6 +58,8 @@ const ScholarshipList = ({ scholarships, onEdit, onDelete, onAddNew }) => {
             scholarship={scholarship}
             onEdit={onEdit}
             onDelete={() => handleDelete(scholarship.id)}
+            onViewChecklist={onViewChecklist}
+            checklistItems={checklistItemsByScholarship?.[scholarship.id] || []}
           />
         ))}
       </div>

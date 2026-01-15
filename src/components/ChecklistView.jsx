@@ -1,0 +1,206 @@
+import { useState, useEffect, useCallback } from 'react';
+import ChecklistItem from './ChecklistItem';
+
+const ChecklistView = ({ scholarship, onBack, checklistItems, onCreateItem, onUpdateItem, onDeleteItem, onReorderItems }) => {
+  const [newItemText, setNewItemText] = useState('');
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [draggedItemId, setDraggedItemId] = useState(null);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const completedCount = checklistItems.filter(item => item.checked).length;
+  const totalCount = checklistItems.length;
+  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  const handleAddItem = async () => {
+    if (newItemText.trim()) {
+      const maxOrder = Math.max(-1, ...checklistItems.map(item => item.order));
+      await onCreateItem({
+        text: newItemText.trim(),
+        checked: false,
+        note: '',
+        order: maxOrder + 1
+      });
+      setNewItemText('');
+      setIsAddingItem(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddItem();
+    } else if (e.key === 'Escape') {
+      setNewItemText('');
+      setIsAddingItem(false);
+    }
+  };
+
+  const handleDragStart = useCallback((e, itemId) => {
+    setDraggedItemId(itemId);
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const handleDrop = useCallback(async (e, targetItemId) => {
+    e.preventDefault();
+    
+    if (!draggedItemId || draggedItemId === targetItemId) {
+      setDraggedItemId(null);
+      return;
+    }
+
+    const items = [...checklistItems];
+    const draggedIndex = items.findIndex(item => item.id === draggedItemId);
+    const targetIndex = items.findIndex(item => item.id === targetItemId);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedItemId(null);
+      return;
+    }
+
+    const [removed] = items.splice(draggedIndex, 1);
+    items.splice(targetIndex, 0, removed);
+
+    const reorderedItems = items.map((item, index) => ({ ...item, order: index }));
+    
+    await onReorderItems(reorderedItems);
+    setDraggedItemId(null);
+  }, [draggedItemId, checklistItems, onReorderItems]);
+
+  if (!scholarship) {
+    return null;
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <button
+        onClick={onBack}
+        className="flex items-center text-gray-600 hover:text-gray-900 font-medium transition-colors mb-6"
+      >
+        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Scholarships
+      </button>
+
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{scholarship.name}</h2>
+        <p className="text-gray-600 mb-4">{scholarship.provider}</p>
+        <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="flex items-center">
+            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Deadline: {formatDate(scholarship.deadline)}
+          </div>
+          <div className="flex items-center">
+            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            </svg>
+            {scholarship.degreeLevel} · {scholarship.country}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">Progress</h3>
+          <span className="text-sm font-medium text-gray-600">
+            {completedCount} of {totalCount} items completed
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+          <div
+            className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+        <p className="text-sm text-gray-500 text-right">{progress}% complete</p>
+      </div>
+
+      <div className="mb-4">
+        {isAddingItem ? (
+          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <input
+              type="text"
+              value={newItemText}
+              onChange={(e) => setNewItemText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={() => {
+                if (newItemText.trim()) {
+                  handleAddItem();
+                } else {
+                  setIsAddingItem(false);
+                  setNewItemText('');
+                }
+              }}
+              placeholder="Enter requirement or task..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              autoFocus
+            />
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={handleAddItem}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+              >
+                Add Item
+              </button>
+              <button
+                onClick={() => {
+                  setIsAddingItem(false);
+                  setNewItemText('');
+                }}
+                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsAddingItem(true)}
+            className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          >
+            + Add New Requirement
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        {checklistItems.length === 0 ? (
+          <div className="text-center py-12 bg-white border border-gray-200 rounded-lg">
+            <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No requirements yet</h3>
+            <p className="text-gray-500">Start by adding requirements or tasks for this scholarship.</p>
+          </div>
+        ) : (
+          checklistItems.map((item) => (
+            <ChecklistItem
+              key={item.id}
+              item={item}
+              onUpdate={onUpdateItem}
+              onDelete={onDeleteItem}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              isDragging={draggedItemId === item.id}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ChecklistView;
