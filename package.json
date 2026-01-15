@@ -1,0 +1,30 @@
+{
+  "name": "scholarship-tracker",
+  "version": "1.0.0",
+  "description": "A personal scholarship tracker application using Vite, React, and IndexedDB",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adzuki33/scholarship-tracker.git"
+  },
+  "keywords": ["scholarship", "tracker", "indexeddb", "react", "vite"],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/adzuki33/scholarship-tracker/issues"
+  },
+  "homepage": "https://github.com/adzuki33/scholarship-tracker#readme",
+  "dependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.2",
+    "vite": "^7.3.1"
+  }
+}
