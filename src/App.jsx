@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import ScholarshipList from './components/ScholarshipList';
 import ScholarshipForm from './components/ScholarshipForm';
 import ChecklistView from './components/ChecklistView';
+import DocumentTracker from './components/DocumentTracker';
 import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems } from './db/indexeddb';
 
 function App() {
   const [scholarships, setScholarships] = useState([]);
   const [view, setView] = useState('list');
+  const [mainTab, setMainTab] = useState('scholarships'); // 'scholarships' or 'documents'
   const [editingScholarship, setEditingScholarship] = useState(null);
   const [currentChecklistScholarship, setCurrentChecklistScholarship] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
@@ -91,11 +93,13 @@ function App() {
   }, []);
 
   const handleCancel = useCallback(() => {
-    setView('list');
+    if (view === 'checklist') {
+      setView('list');
+    }
     setEditingScholarship(null);
     setCurrentChecklistScholarship(null);
     setChecklistItems([]);
-  }, []);
+  }, [view]);
 
   const handleViewChecklist = useCallback(async (scholarshipId) => {
     const scholarship = scholarships.find(s => s.id === scholarshipId);
@@ -183,15 +187,15 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-3">
               <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
               <h1 className="text-2xl font-bold text-gray-900">Scholarship Tracker</h1>
             </div>
-            {view === 'form' && (
+            {mainTab === 'scholarships' && view === 'form' && (
               <button
                 onClick={handleCancel}
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
@@ -200,35 +204,68 @@ function App() {
               </button>
             )}
           </div>
+          
+          <div className="flex items-center space-x-1 border-t border-gray-200">
+            <button
+              onClick={() => {
+                setMainTab('scholarships');
+                setView('list');
+                handleCancel();
+              }}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                mainTab === 'scholarships'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Scholarships
+            </button>
+            <button
+              onClick={() => {
+                setMainTab('documents');
+              }}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                mainTab === 'documents'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Documents
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {view === 'list' ? (
-          <ScholarshipList
-            scholarships={scholarships}
-            onEdit={handleEdit}
-            onDelete={handleDeleteScholarship}
-            onAddNew={handleAddNew}
-            onViewChecklist={handleViewChecklist}
-            checklistItemsByScholarship={checklistItemsByScholarship}
-          />
-        ) : view === 'checklist' ? (
-          <ChecklistView
-            scholarship={currentChecklistScholarship}
-            onBack={handleCancel}
-            checklistItems={checklistItems}
-            onCreateItem={handleCreateChecklistItem}
-            onUpdateItem={handleUpdateChecklistItem}
-            onDeleteItem={handleDeleteChecklistItem}
-            onReorderItems={handleReorderChecklistItems}
-          />
+        {mainTab === 'scholarships' ? (
+          view === 'list' ? (
+            <ScholarshipList
+              scholarships={scholarships}
+              onEdit={handleEdit}
+              onDelete={handleDeleteScholarship}
+              onAddNew={handleAddNew}
+              onViewChecklist={handleViewChecklist}
+              checklistItemsByScholarship={checklistItemsByScholarship}
+            />
+          ) : view === 'checklist' ? (
+            <ChecklistView
+              scholarship={currentChecklistScholarship}
+              onBack={handleCancel}
+              checklistItems={checklistItems}
+              onCreateItem={handleCreateChecklistItem}
+              onUpdateItem={handleUpdateChecklistItem}
+              onDeleteItem={handleDeleteChecklistItem}
+              onReorderItems={handleReorderChecklistItems}
+            />
+          ) : (
+            <ScholarshipForm
+              scholarship={editingScholarship}
+              onSave={handleSave}
+              onCancel={handleCancel}
+            />
+          )
         ) : (
-          <ScholarshipForm
-            scholarship={editingScholarship}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
+          <DocumentTracker />
         )}
       </main>
 

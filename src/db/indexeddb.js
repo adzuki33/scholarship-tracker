@@ -1,7 +1,8 @@
 const DB_NAME = 'ScholarshipTrackerDB';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_NAME = 'scholarships';
 const CHECKLIST_STORE_NAME = 'checklistItems';
+const DOCUMENTS_STORE_NAME = 'documents';
 
 let db = null;
 
@@ -38,6 +39,12 @@ export const initDB = () => {
         checklistStore.createIndex('scholarshipId', 'scholarshipId', { unique: false });
         checklistStore.createIndex('order', 'order', { unique: false });
         console.log('Object store created:', CHECKLIST_STORE_NAME);
+      }
+      if (!db.objectStoreNames.contains(DOCUMENTS_STORE_NAME)) {
+        const documentsStore = db.createObjectStore(DOCUMENTS_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        documentsStore.createIndex('type', 'type', { unique: false });
+        documentsStore.createIndex('status', 'status', { unique: false });
+        console.log('Object store created:', DOCUMENTS_STORE_NAME);
       }
     };
   });
@@ -387,6 +394,157 @@ export const reorderChecklistItems = (scholarshipId, items) => {
           reject(getRequest.error);
         };
       });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const createDocument = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([DOCUMENTS_STORE_NAME], 'readwrite');
+      const objectStore = transaction.objectStore(DOCUMENTS_STORE_NAME);
+      
+      const document = {
+        name: data.name,
+        type: data.type,
+        status: data.status || 'NotReady',
+        fileLink: data.fileLink || '',
+        notes: data.notes || '',
+        lastUpdated: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const request = objectStore.add(document);
+
+      request.onsuccess = () => {
+        console.log('Document created with ID:', request.result);
+        resolve({ ...document, id: request.result });
+      };
+
+      request.onerror = () => {
+        console.error('Error creating document:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getAllDocuments = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([DOCUMENTS_STORE_NAME], 'readonly');
+      const objectStore = transaction.objectStore(DOCUMENTS_STORE_NAME);
+      const request = objectStore.getAll();
+
+      request.onsuccess = () => {
+        const documents = request.result;
+        console.log('Retrieved documents:', documents.length);
+        resolve(documents);
+      };
+
+      request.onerror = () => {
+        console.error('Error getting documents:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getDocument = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([DOCUMENTS_STORE_NAME], 'readonly');
+      const objectStore = transaction.objectStore(DOCUMENTS_STORE_NAME);
+      const request = objectStore.get(id);
+
+      request.onsuccess = () => {
+        console.log('Retrieved document:', id);
+        resolve(request.result);
+      };
+
+      request.onerror = () => {
+        console.error('Error getting document:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const updateDocument = (id, data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([DOCUMENTS_STORE_NAME], 'readwrite');
+      const objectStore = transaction.objectStore(DOCUMENTS_STORE_NAME);
+      
+      const request = objectStore.get(id);
+
+      request.onsuccess = () => {
+        const existing = request.result;
+        if (!existing) {
+          reject(new Error('Document not found'));
+          return;
+        }
+
+        const updated = {
+          ...existing,
+          ...data,
+          lastUpdated: data.lastUpdated || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        const updateRequest = objectStore.put(updated);
+
+        updateRequest.onsuccess = () => {
+          console.log('Document updated:', id);
+          resolve(updated);
+        };
+
+        updateRequest.onerror = () => {
+          console.error('Error updating document:', updateRequest.error);
+          reject(updateRequest.error);
+        };
+      };
+
+      request.onerror = () => {
+        console.error('Error getting document for update:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const deleteDocument = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([DOCUMENTS_STORE_NAME], 'readwrite');
+      const objectStore = transaction.objectStore(DOCUMENTS_STORE_NAME);
+      const request = objectStore.delete(id);
+
+      request.onsuccess = () => {
+        console.log('Document deleted:', id);
+        resolve();
+      };
+
+      request.onerror = () => {
+        console.error('Error deleting document:', request.error);
+        reject(request.error);
+      };
     } catch (error) {
       reject(error);
     }
