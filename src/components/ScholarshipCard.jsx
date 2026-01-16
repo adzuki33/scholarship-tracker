@@ -2,13 +2,29 @@ import React from 'react';
 
 const statusColors = {
   'Not Started': 'bg-gray-100 text-gray-800',
-  'Preparing': 'bg-blue-100 text-blue-800',
-  'Submitted': 'bg-yellow-100 text-yellow-800',
-  'Interview': 'bg-purple-100 text-purple-800',
-  'Result': 'bg-green-100 text-green-800',
+  Preparing: 'bg-blue-100 text-blue-800',
+  Submitted: 'bg-yellow-100 text-yellow-800',
+  Interview: 'bg-purple-100 text-purple-800',
+  Result: 'bg-green-100 text-green-800',
 };
 
-const ScholarshipCard = ({ scholarship, onEdit, onDelete, onViewChecklist, checklistItems }) => {
+const documentStatusDots = {
+  NotReady: 'bg-gray-400',
+  Draft: 'bg-yellow-500',
+  Final: 'bg-blue-500',
+  Uploaded: 'bg-green-500',
+};
+
+const completeDocumentStatuses = new Set(['Final', 'Uploaded']);
+
+const ScholarshipCard = ({
+  scholarship,
+  onEdit,
+  onDelete,
+  onViewChecklist,
+  checklistItems,
+  documents = [],
+}) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -17,14 +33,41 @@ const ScholarshipCard = ({ scholarship, onEdit, onDelete, onViewChecklist, check
   const deadline = new Date(scholarship.deadline);
   const today = new Date();
   const daysUntilDeadline = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
-  
-  const deadlineClass = daysUntilDeadline < 7 ? 'text-red-600 font-semibold' : 
-                       daysUntilDeadline < 30 ? 'text-yellow-600 font-semibold' : 
-                       'text-gray-600';
 
-  const completedItems = checklistItems?.filter(item => item.checked).length || 0;
+  const deadlineClass =
+    daysUntilDeadline < 7
+      ? 'text-red-600 font-semibold'
+      : daysUntilDeadline < 30
+        ? 'text-yellow-600 font-semibold'
+        : 'text-gray-600';
+
+  const completedItems = checklistItems?.filter((item) => item.checked).length || 0;
   const totalItems = checklistItems?.length || 0;
   const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+
+  const requiredDocumentIds = scholarship.requiredDocumentIds || [];
+  const requiredDocumentStatuses = requiredDocumentIds.map((id) => {
+    const doc = documents.find((d) => d.id === id);
+    return {
+      id,
+      status: doc?.status || 'NotReady',
+    };
+  });
+
+  const totalDocs = requiredDocumentIds.length;
+  const readyDocs = requiredDocumentStatuses.filter((d) => completeDocumentStatuses.has(d.status)).length;
+  const anyNotReady = requiredDocumentStatuses.some((d) => d.status === 'NotReady');
+  const allDocsReady = totalDocs > 0 && readyDocs === totalDocs;
+
+  const documentsBadgeClass = allDocsReady
+    ? 'bg-green-100 text-green-800'
+    : anyNotReady
+      ? 'bg-yellow-100 text-yellow-800'
+      : 'bg-blue-100 text-blue-800';
+
+  const documentsBadgeText = allDocsReady
+    ? 'All documents ready'
+    : `${readyDocs} of ${totalDocs} documents ready`;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-5">
@@ -37,18 +80,30 @@ const ScholarshipCard = ({ scholarship, onEdit, onDelete, onViewChecklist, check
           {scholarship.status}
         </span>
       </div>
-      
+
       <div className="space-y-2 mb-4">
         <div className="flex items-center text-sm">
           <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+            />
           </svg>
-          <span className="text-gray-600">{scholarship.degreeLevel} · {scholarship.country}</span>
+          <span className="text-gray-600">
+            {scholarship.degreeLevel} · {scholarship.country}
+          </span>
         </div>
         <div className="flex items-center text-sm">
           <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
           </svg>
           <span className={deadlineClass}>Deadline: {formatDate(scholarship.deadline)}</span>
           {daysUntilDeadline < 0 && <span className="ml-2 text-red-600 text-xs">(Passed)</span>}
@@ -58,11 +113,38 @@ const ScholarshipCard = ({ scholarship, onEdit, onDelete, onViewChecklist, check
         </div>
         <div className="flex items-center text-sm">
           <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+            />
           </svg>
           <span className="text-gray-600">{scholarship.applicationYear}</span>
         </div>
       </div>
+
+      {totalDocs > 0 && (
+        <div className="mb-4 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">Documents</span>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${documentsBadgeClass}`}>
+              {documentsBadgeText}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {requiredDocumentStatuses.map((doc) => (
+              <span
+                key={doc.id}
+                className={`w-2.5 h-2.5 rounded-full ${
+                  documentStatusDots[doc.status] || documentStatusDots.NotReady
+                }`}
+                title={doc.status}
+              ></span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {totalItems > 0 && (
         <div className="mb-4 pt-3 border-t border-gray-100">

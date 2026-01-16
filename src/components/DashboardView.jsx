@@ -72,6 +72,7 @@ const DashboardView = ({
                         key={scholarship.id}
                         scholarship={scholarship}
                         progress={progress}
+                        documents={documents}
                         onViewChecklist={onViewChecklist}
                       />
                     );

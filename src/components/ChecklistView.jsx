@@ -1,7 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import ChecklistItem from './ChecklistItem';
+import DocumentRequirements from './DocumentRequirements';
 
-const ChecklistView = ({ scholarship, onBack, checklistItems, onCreateItem, onUpdateItem, onDeleteItem, onReorderItems }) => {
+const ChecklistView = ({
+  scholarship,
+  onBack,
+  checklistItems,
+  onCreateItem,
+  onUpdateItem,
+  onDeleteItem,
+  onReorderItems,
+  documents = [],
+  onViewDocument,
+}) => {
   const [newItemText, setNewItemText] = useState('');
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
@@ -110,6 +121,8 @@ const ChecklistView = ({ scholarship, onBack, checklistItems, onCreateItem, onUp
           </div>
         </div>
       </div>
+
+      <DocumentRequirements scholarship={scholarship} documents={documents} onViewDocument={onViewDocument} />
 
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between mb-3">
