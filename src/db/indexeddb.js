@@ -219,20 +219,59 @@ export const clearAllData = () => {
   return new Promise(async (resolve, reject) => {
     try {
       await initDB();
-      const transaction = db.transaction([STORE_NAME], 'readwrite');
-      const objectStore = transaction.objectStore(STORE_NAME);
-      const request = objectStore.clear();
-
-      request.onsuccess = () => {
-        console.log('All scholarships cleared');
-        resolve();
+      const transaction = db.transaction([STORE_NAME, CHECKLIST_STORE_NAME, DOCUMENTS_STORE_NAME], 'readwrite');
+      
+      const scholarshipsStore = transaction.objectStore(STORE_NAME);
+      const checklistStore = transaction.objectStore(CHECKLIST_STORE_NAME);
+      const documentsStore = transaction.objectStore(DOCUMENTS_STORE_NAME);
+      
+      let completed = 0;
+      const total = 3;
+      
+      const handleCompletion = () => {
+        completed++;
+        if (completed === total) {
+          console.log('All data cleared from all stores');
+          resolve();
+        }
       };
-
-      request.onerror = () => {
-        console.error('Error clearing data:', request.error);
-        reject(request.error);
+      
+      transaction.onerror = () => {
+        console.error('Transaction error:', transaction.error);
+        reject(transaction.error);
+      };
+      
+      const scholarshipsRequest = scholarshipsStore.clear();
+      scholarshipsRequest.onsuccess = () => {
+        console.log('Scholarships cleared');
+        handleCompletion();
+      };
+      scholarshipsRequest.onerror = () => {
+        console.error('Error clearing scholarships:', scholarshipsRequest.error);
+        reject(scholarshipsRequest.error);
+      };
+      
+      const checklistRequest = checklistStore.clear();
+      checklistRequest.onsuccess = () => {
+        console.log('Checklist items cleared');
+        handleCompletion();
+      };
+      checklistRequest.onerror = () => {
+        console.error('Error clearing checklist items:', checklistRequest.error);
+        reject(checklistRequest.error);
+      };
+      
+      const documentsRequest = documentsStore.clear();
+      documentsRequest.onsuccess = () => {
+        console.log('Documents cleared');
+        handleCompletion();
+      };
+      documentsRequest.onerror = () => {
+        console.error('Error clearing documents:', documentsRequest.error);
+        reject(documentsRequest.error);
       };
     } catch (error) {
+      console.error('Error in clearAllData:', error);
       reject(error);
     }
   });

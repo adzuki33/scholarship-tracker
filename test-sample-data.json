@@ -1,0 +1,101 @@
+{
+  "version": "1.0",
+  "exportedAt": "2024-01-15T10:30:00Z",
+  "data": {
+    "scholarships": [
+      {
+        "id": 1,
+        "name": "Merit Scholarship",
+        "provider": "State University",
+        "degreeLevel": "Bachelor",
+        "country": "United States",
+        "applicationYear": 2024,
+        "deadline": "2024-03-15T00:00:00Z",
+        "status": "Not Started",
+        "requiredDocumentIds": [],
+        "createdAt": "2024-01-01T00:00:00Z",
+        "updatedAt": "2024-01-01T00:00:00Z"
+      },
+      {
+        "id": 2,
+        "name": "Research Grant",
+        "provider": "National Science Foundation",
+        "degreeLevel": "Graduate",
+        "country": "United States",
+        "applicationYear": 2024,
+        "deadline": "2024-04-30T00:00:00Z",
+        "status": "Preparing",
+        "requiredDocumentIds": [],
+        "createdAt": "2024-01-02T00:00:00Z",
+        "updatedAt": "2024-01-10T00:00:00Z"
+      }
+    ],
+    "checklistItems": [
+      {
+        "id": 1,
+        "scholarshipId": 1,
+        "text": "Complete application form",
+        "checked": true,
+        "note": "Submitted online",
+        "order": 0,
+        "createdAt": "2024-01-05T00:00:00Z",
+        "updatedAt": "2024-01-10T00:00:00Z"
+      },
+      {
+        "id": 2,
+        "scholarshipId": 1,
+        "text": "Gather transcripts",
+        "checked": false,
+        "note": "Need official copies",
+        "order": 1,
+        "createdAt": "2024-01-05T00:00:00Z",
+        "updatedAt": "2024-01-05T00:00:00Z"
+      },
+      {
+        "id": 3,
+        "scholarshipId": 2,
+        "text": "Write research proposal",
+        "checked": false,
+        "note": "",
+        "order": 0,
+        "createdAt": "2024-01-06T00:00:00Z",
+        "updatedAt": "2024-01-06T00:00:00Z"
+      }
+    ],
+    "documents": [
+      {
+        "id": 1,
+        "name": "Academic Transcript",
+        "type": "Academic Transcript",
+        "status": "Draft",
+        "fileLink": "",
+        "notes": "Need to get official copy",
+        "lastUpdated": "2024-01-10T00:00:00Z",
+        "createdAt": "2024-01-05T00:00:00Z",
+        "updatedAt": "2024-01-10T00:00:00Z"
+      },
+      {
+        "id": 2,
+        "name": "Resume",
+        "type": "Resume",
+        "status": "Final",
+        "fileLink": "",
+        "notes": "Updated with latest experience",
+        "lastUpdated": "2024-01-12T00:00:00Z",
+        "createdAt": "2024-01-05T00:00:00Z",
+        "updatedAt": "2024-01-12T00:00:00Z"
+      },
+      {
+        "id": 3,
+        "name": "Research Proposal",
+        "type": "Research Proposal",
+        "status": "NotReady",
+        "fileLink": "",
+        "notes": "Need to write first draft",
+        "lastUpdated": "2024-01-06T00:00:00Z",
+        "createdAt": "2024-01-06T00:00:00Z",
+        "updatedAt": "2024-01-06T00:00:00Z"
+      }
+    ]
+  }
+}

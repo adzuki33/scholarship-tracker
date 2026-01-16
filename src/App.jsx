@@ -4,6 +4,7 @@ import ScholarshipList from './components/ScholarshipList';
 import ScholarshipForm from './components/ScholarshipForm';
 import ChecklistView from './components/ChecklistView';
 import DocumentTracker from './components/DocumentTracker';
+import DataManagement from './components/DataManagement';
 import ThemeToggle from './components/ThemeToggle';
 import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems, getAllDocuments } from './db/indexeddb';
 
@@ -12,7 +13,7 @@ function App() {
   const [documents, setDocuments] = useState([]);
   const [documentTrackerEditId, setDocumentTrackerEditId] = useState(null);
   const [view, setView] = useState('dashboard');
-  const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard', 'scholarships' or 'documents'
+  const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard', 'scholarships', 'documents', or 'data'
   const [editingScholarship, setEditingScholarship] = useState(null);
   const [currentChecklistScholarship, setCurrentChecklistScholarship] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
@@ -194,6 +195,13 @@ function App() {
     }
   }, [currentChecklistScholarship, loadAllChecklistItems]);
 
+  const handleImportComplete = useCallback(async () => {
+    // Refresh all data after import
+    await loadScholarships();
+    await loadDocuments();
+    await loadAllChecklistItems();
+  }, []);
+
   const handleSave = useCallback((data) => {
     if (editingScholarship) {
       handleUpdateScholarship(data);
@@ -280,6 +288,19 @@ function App() {
             >
               Documents
             </button>
+            <button
+              onClick={() => {
+                setMainTab('data');
+                handleCancel();
+              }}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                mainTab === 'data'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Data Management
+            </button>
           </div>
         </div>
       </header>
@@ -324,6 +345,8 @@ function App() {
               onCancel={handleCancel}
             />
           )
+        ) : mainTab === 'data' ? (
+          <DataManagement onImportComplete={handleImportComplete} />
         ) : (
           <DocumentTracker
             scholarships={scholarships}
