@@ -5,6 +5,7 @@ import ScholarshipForm from './components/ScholarshipForm';
 import ChecklistView from './components/ChecklistView';
 import DocumentTracker from './components/DocumentTracker';
 import DataManagement from './components/DataManagement';
+import CalendarView from './components/CalendarView';
 import ThemeToggle from './components/ThemeToggle';
 import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems, getAllDocuments } from './db/indexeddb';
 
@@ -13,7 +14,7 @@ function App() {
   const [documents, setDocuments] = useState([]);
   const [documentTrackerEditId, setDocumentTrackerEditId] = useState(null);
   const [view, setView] = useState('dashboard');
-  const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard', 'scholarships', 'documents', or 'data'
+  const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard', 'scholarships', 'calendar', 'documents', or 'data'
   const [editingScholarship, setEditingScholarship] = useState(null);
   const [currentChecklistScholarship, setCurrentChecklistScholarship] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
@@ -276,6 +277,19 @@ function App() {
             </button>
             <button
               onClick={() => {
+                setMainTab('calendar');
+                handleCancel();
+              }}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                mainTab === 'calendar'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Calendar
+            </button>
+            <button
+              onClick={() => {
                 setMainTab('documents');
                 clearDocumentTrackerEditId();
                 handleCancel();
@@ -345,6 +359,12 @@ function App() {
               onCancel={handleCancel}
             />
           )
+        ) : mainTab === 'calendar' ? (
+          <CalendarView
+            scholarships={scholarships}
+            onViewChecklist={handleViewChecklist}
+            onEdit={handleEdit}
+          />
         ) : mainTab === 'data' ? (
           <DataManagement onImportComplete={handleImportComplete} />
         ) : (
