@@ -6,6 +6,7 @@ import {
   getNextMonth,
   getToday,
   getShortDayName,
+  isToday,
 } from '../utils/calendarUtils';
 import { groupScholarshipsByDate } from '../utils/filterScholarships';
 import CalendarDay from './CalendarDay';
