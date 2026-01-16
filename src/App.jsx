@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
+import DashboardView from './components/DashboardView';
 import ScholarshipList from './components/ScholarshipList';
 import ScholarshipForm from './components/ScholarshipForm';
 import ChecklistView from './components/ChecklistView';
 import DocumentTracker from './components/DocumentTracker';
-import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems } from './db/indexeddb';
+import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems, getAllDocuments } from './db/indexeddb';
 
 function App() {
   const [scholarships, setScholarships] = useState([]);
-  const [view, setView] = useState('list');
-  const [mainTab, setMainTab] = useState('scholarships'); // 'scholarships' or 'documents'
+  const [documents, setDocuments] = useState([]);
+  const [view, setView] = useState('dashboard');
+  const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard', 'scholarships' or 'documents'
   const [editingScholarship, setEditingScholarship] = useState(null);
   const [currentChecklistScholarship, setCurrentChecklistScholarship] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
@@ -18,6 +20,7 @@ function App() {
   useEffect(() => {
     loadScholarships();
     loadAllChecklistItems();
+    loadDocuments();
   }, []);
 
   const loadAllChecklistItems = async () => {
@@ -49,6 +52,15 @@ function App() {
       console.error('Error loading scholarships:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadDocuments = async () => {
+    try {
+      const data = await getAllDocuments();
+      setDocuments(data);
+    } catch (error) {
+      console.error('Error loading documents:', error);
     }
   };
 
@@ -89,6 +101,7 @@ function App() {
 
   const handleAddNew = useCallback(() => {
     setEditingScholarship(null);
+    setMainTab('scholarships');
     setView('form');
   }, []);
 
@@ -105,6 +118,7 @@ function App() {
     const scholarship = scholarships.find(s => s.id === scholarshipId);
     if (scholarship) {
       setCurrentChecklistScholarship(scholarship);
+      setMainTab('scholarships');
       setView('checklist');
       try {
         const items = await getChecklistItems(scholarshipId);
@@ -208,6 +222,20 @@ function App() {
           <div className="flex items-center space-x-1 border-t border-gray-200">
             <button
               onClick={() => {
+                setMainTab('dashboard');
+                setView('dashboard');
+                handleCancel();
+              }}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                mainTab === 'dashboard'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => {
                 setMainTab('scholarships');
                 setView('list');
                 handleCancel();
@@ -237,7 +265,15 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {mainTab === 'scholarships' ? (
+        {mainTab === 'dashboard' ? (
+          <DashboardView
+            scholarships={scholarships}
+            checklistItemsByScholarship={checklistItemsByScholarship}
+            documents={documents}
+            onViewChecklist={handleViewChecklist}
+            onAddScholarship={handleAddNew}
+          />
+        ) : mainTab === 'scholarships' ? (
           view === 'list' ? (
             <ScholarshipList
               scholarships={scholarships}
