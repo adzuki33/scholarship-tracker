@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import DocumentRequirementForm from './DocumentRequirementForm';
+import TemplateSelector from './TemplateSelector';
+import CustomTemplateForm from './CustomTemplateForm';
 
-const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
+const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel, onTemplateSelect }) => {
   const [formData, setFormData] = useState({
     name: '',
     provider: '',
@@ -14,6 +16,9 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showTemplateSelector, setShowTemplateSelector] = useState(!scholarship);
+  const [showCustomTemplateForm, setShowCustomTemplateForm] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   useEffect(() => {
     if (scholarship) {
@@ -27,6 +32,7 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
         status: scholarship.status,
         requiredDocumentIds: scholarship.requiredDocumentIds || [],
       });
+      setShowTemplateSelector(false);
     } else {
       setFormData({
         name: '',
@@ -38,6 +44,7 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
         status: 'Not Started',
         requiredDocumentIds: [],
       });
+      setShowTemplateSelector(true);
     }
   }, [scholarship]);
 
@@ -90,15 +97,90 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
         ...formData,
         deadline: new Date(formData.deadline).toISOString(),
       };
-      onSave(dataToSave);
+      onSave(dataToSave, selectedTemplate);
     }
   };
+
+  const handleTemplateSelect = (template) => {
+    setSelectedTemplate(template);
+    setShowTemplateSelector(false);
+    setShowCustomTemplateForm(false);
+  };
+
+  const handleSkipTemplate = () => {
+    setSelectedTemplate(null);
+    setShowTemplateSelector(false);
+    setShowCustomTemplateForm(false);
+  };
+
+  const handleCreateCustomTemplate = () => {
+    setShowTemplateSelector(false);
+    setShowCustomTemplateForm(true);
+  };
+
+  const handleCustomTemplateSave = async (templateData) => {
+    try {
+      const { createTemplate } = await import('../db/indexeddb');
+      const savedTemplate = await createTemplate(templateData);
+      setSelectedTemplate(savedTemplate);
+      setShowCustomTemplateForm(false);
+    } catch (error) {
+      console.error('Error saving custom template:', error);
+      alert('Failed to save template: ' + error.message);
+    }
+  };
+
+  const handleCustomTemplateCancel = () => {
+    setShowCustomTemplateForm(false);
+    setShowTemplateSelector(true);
+  };
+
+  if (showTemplateSelector && !scholarship) {
+    return (
+      <TemplateSelector
+        onSelect={handleTemplateSelect}
+        onSkip={handleSkipTemplate}
+        onCreateCustom={handleCreateCustomTemplate}
+      />
+    );
+  }
+
+  if (showCustomTemplateForm && !scholarship) {
+    return (
+      <CustomTemplateForm
+        onSave={handleCustomTemplateSave}
+        onCancel={handleCustomTemplateCancel}
+      />
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
         {scholarship ? 'Edit Scholarship' : 'Add New Scholarship'}
       </h2>
+
+      {selectedTemplate && !scholarship && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                Template Selected: {selectedTemplate.name}
+              </h3>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                {selectedTemplate.items?.length || 0} checklist items will be added after creating the scholarship
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowTemplateSelector(true)}
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-sm font-medium"
+            >
+              Change Template
+            </button>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>

@@ -8,13 +8,14 @@ import DataManagement from './components/DataManagement';
 import CalendarView from './components/CalendarView';
 import ThemeToggle from './components/ThemeToggle';
 import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems, getAllDocuments } from './db/indexeddb';
+import TemplateManager from './components/TemplateManager';
 
 function App() {
   const [scholarships, setScholarships] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [documentTrackerEditId, setDocumentTrackerEditId] = useState(null);
   const [view, setView] = useState('dashboard');
-  const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard', 'scholarships', 'calendar', 'documents', or 'data'
+  const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard', 'scholarships', 'calendar', 'documents', 'templates', or 'data'
   const [editingScholarship, setEditingScholarship] = useState(null);
   const [currentChecklistScholarship, setCurrentChecklistScholarship] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
@@ -68,10 +69,24 @@ function App() {
     }
   };
 
-  const handleCreateScholarship = useCallback(async (data) => {
+  const handleCreateScholarship = useCallback(async (data, template = null) => {
     try {
-      await createScholarship(data);
+      const scholarship = await createScholarship(data);
+      
+      if (template && template.items && template.items.length > 0) {
+        for (let i = 0; i < template.items.length; i++) {
+          const item = template.items[i];
+          await createChecklistItem(scholarship.id, {
+            text: item.text,
+            note: item.note || '',
+            order: i,
+            checked: false
+          });
+        }
+      }
+      
       await loadScholarships();
+      await loadAllChecklistItems();
       setView('list');
     } catch (error) {
       console.error('Error creating scholarship:', error);
@@ -203,11 +218,11 @@ function App() {
     await loadAllChecklistItems();
   }, []);
 
-  const handleSave = useCallback((data) => {
+  const handleSave = useCallback((data, template = null) => {
     if (editingScholarship) {
       handleUpdateScholarship(data);
     } else {
-      handleCreateScholarship(data);
+      handleCreateScholarship(data, template);
     }
   }, [editingScholarship, handleCreateScholarship, handleUpdateScholarship]);
 
@@ -304,6 +319,19 @@ function App() {
             </button>
             <button
               onClick={() => {
+                setMainTab('templates');
+                handleCancel();
+              }}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                mainTab === 'templates'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Templates
+            </button>
+            <button
+              onClick={() => {
                 setMainTab('data');
                 handleCancel();
               }}
@@ -365,6 +393,8 @@ function App() {
             onViewChecklist={handleViewChecklist}
             onEdit={handleEdit}
           />
+        ) : mainTab === 'templates' ? (
+          <TemplateManager onTemplateUpdate={() => {}} />
         ) : mainTab === 'data' ? (
           <DataManagement onImportComplete={handleImportComplete} />
         ) : (

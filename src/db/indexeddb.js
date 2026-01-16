@@ -1,8 +1,9 @@
 const DB_NAME = 'ScholarshipTrackerDB';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const STORE_NAME = 'scholarships';
 const CHECKLIST_STORE_NAME = 'checklistItems';
 const DOCUMENTS_STORE_NAME = 'documents';
+const TEMPLATES_STORE_NAME = 'templates';
 
 let db = null;
 
@@ -61,6 +62,12 @@ export const initDB = () => {
         documentsStore.createIndex('type', 'type', { unique: false });
         documentsStore.createIndex('status', 'status', { unique: false });
         console.log('Object store created:', DOCUMENTS_STORE_NAME);
+      }
+      if (!db.objectStoreNames.contains(TEMPLATES_STORE_NAME)) {
+        const templatesStore = db.createObjectStore(TEMPLATES_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        templatesStore.createIndex('createdBy', 'createdBy', { unique: false });
+        templatesStore.createIndex('category', 'category', { unique: false });
+        console.log('Object store created:', TEMPLATES_STORE_NAME);
       }
     };
   });
@@ -674,6 +681,208 @@ export const getDocumentScholarships = (documentId) => {
 
       request.onerror = () => {
         console.error('Error getting scholarships for document:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const createTemplate = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([TEMPLATES_STORE_NAME], 'readwrite');
+      const objectStore = transaction.objectStore(TEMPLATES_STORE_NAME);
+      
+      const template = {
+        name: data.name,
+        description: data.description || '',
+        category: data.category || 'Custom',
+        country: data.country || '',
+        items: data.items || [],
+        createdBy: 'user',
+        version: '1.0',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const request = objectStore.add(template);
+
+      request.onsuccess = () => {
+        console.log('Template created with ID:', request.result);
+        resolve({ ...template, id: request.result });
+      };
+
+      request.onerror = () => {
+        console.error('Error creating template:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getTemplate = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([TEMPLATES_STORE_NAME], 'readonly');
+      const objectStore = transaction.objectStore(TEMPLATES_STORE_NAME);
+      const request = objectStore.get(id);
+
+      request.onsuccess = () => {
+        console.log('Retrieved template:', id);
+        resolve(request.result);
+      };
+
+      request.onerror = () => {
+        console.error('Error getting template:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getAllTemplates = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([TEMPLATES_STORE_NAME], 'readonly');
+      const objectStore = transaction.objectStore(TEMPLATES_STORE_NAME);
+      const request = objectStore.getAll();
+
+      request.onsuccess = () => {
+        const templates = request.result;
+        console.log('Retrieved templates:', templates.length);
+        resolve(templates);
+      };
+
+      request.onerror = () => {
+        console.error('Error getting templates:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const updateTemplate = (id, data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([TEMPLATES_STORE_NAME], 'readwrite');
+      const objectStore = transaction.objectStore(TEMPLATES_STORE_NAME);
+      
+      const request = objectStore.get(id);
+
+      request.onsuccess = () => {
+        const existing = request.result;
+        if (!existing) {
+          reject(new Error('Template not found'));
+          return;
+        }
+
+        if (existing.createdBy === 'system') {
+          reject(new Error('Cannot update built-in templates'));
+          return;
+        }
+
+        const updated = {
+          ...existing,
+          ...data,
+          updatedAt: new Date().toISOString()
+        };
+
+        const updateRequest = objectStore.put(updated);
+
+        updateRequest.onsuccess = () => {
+          console.log('Template updated:', id);
+          resolve(updated);
+        };
+
+        updateRequest.onerror = () => {
+          console.error('Error updating template:', updateRequest.error);
+          reject(updateRequest.error);
+        };
+      };
+
+      request.onerror = () => {
+        console.error('Error getting template for update:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const deleteTemplate = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([TEMPLATES_STORE_NAME], 'readwrite');
+      const objectStore = transaction.objectStore(TEMPLATES_STORE_NAME);
+      
+      const getRequest = objectStore.get(id);
+      
+      getRequest.onsuccess = () => {
+        const template = getRequest.result;
+        if (!template) {
+          reject(new Error('Template not found'));
+          return;
+        }
+
+        if (template.createdBy === 'system') {
+          reject(new Error('Cannot delete built-in templates'));
+          return;
+        }
+
+        const deleteRequest = objectStore.delete(id);
+
+        deleteRequest.onsuccess = () => {
+          console.log('Template deleted:', id);
+          resolve();
+        };
+
+        deleteRequest.onerror = () => {
+          console.error('Error deleting template:', deleteRequest.error);
+          reject(deleteRequest.error);
+        };
+      };
+
+      getRequest.onerror = () => {
+        console.error('Error getting template for delete:', getRequest.error);
+        reject(getRequest.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getUserTemplates = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([TEMPLATES_STORE_NAME], 'readonly');
+      const objectStore = transaction.objectStore(TEMPLATES_STORE_NAME);
+      const index = objectStore.index('createdBy');
+      const request = index.getAll('user');
+
+      request.onsuccess = () => {
+        const templates = request.result;
+        console.log('Retrieved user templates:', templates.length);
+        resolve(templates);
+      };
+
+      request.onerror = () => {
+        console.error('Error getting user templates:', request.error);
         reject(request.error);
       };
     } catch (error) {
