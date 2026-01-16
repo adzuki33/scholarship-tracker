@@ -9,6 +9,7 @@ import { getAllScholarships, createScholarship, updateScholarship, deleteScholar
 function App() {
   const [scholarships, setScholarships] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [documentTrackerEditId, setDocumentTrackerEditId] = useState(null);
   const [view, setView] = useState('dashboard');
   const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard', 'scholarships' or 'documents'
   const [editingScholarship, setEditingScholarship] = useState(null);
@@ -129,6 +130,19 @@ function App() {
       }
     }
   }, [scholarships]);
+
+  const handleViewDocument = useCallback((documentId) => {
+    setDocumentTrackerEditId(documentId);
+    setMainTab('documents');
+    setView('list');
+    setEditingScholarship(null);
+    setCurrentChecklistScholarship(null);
+    setChecklistItems([]);
+  }, []);
+
+  const clearDocumentTrackerEditId = useCallback(() => {
+    setDocumentTrackerEditId(null);
+  }, []);
 
   const handleCreateChecklistItem = useCallback(async (data) => {
     if (!currentChecklistScholarship) return;
@@ -251,6 +265,8 @@ function App() {
             <button
               onClick={() => {
                 setMainTab('documents');
+                clearDocumentTrackerEditId();
+                handleCancel();
               }}
               className={`px-4 py-2 font-medium text-sm transition-colors ${
                 mainTab === 'documents'
@@ -282,6 +298,7 @@ function App() {
               onAddNew={handleAddNew}
               onViewChecklist={handleViewChecklist}
               checklistItemsByScholarship={checklistItemsByScholarship}
+              documents={documents}
             />
           ) : view === 'checklist' ? (
             <ChecklistView
@@ -292,16 +309,25 @@ function App() {
               onUpdateItem={handleUpdateChecklistItem}
               onDeleteItem={handleDeleteChecklistItem}
               onReorderItems={handleReorderChecklistItems}
+              documents={documents}
+              onViewDocument={handleViewDocument}
             />
           ) : (
             <ScholarshipForm
               scholarship={editingScholarship}
+              documents={documents}
               onSave={handleSave}
               onCancel={handleCancel}
             />
           )
         ) : (
-          <DocumentTracker />
+          <DocumentTracker
+            scholarships={scholarships}
+            onViewScholarship={handleViewChecklist}
+            initialEditDocumentId={documentTrackerEditId}
+            onClearInitialEdit={clearDocumentTrackerEditId}
+            onDocumentsChanged={loadDocuments}
+          />
         )}
       </main>
 

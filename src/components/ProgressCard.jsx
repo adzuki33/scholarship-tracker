@@ -3,15 +3,24 @@ import { getUrgencyBgColor } from '../utils/stats';
 
 const statusColors = {
   'Not Started': 'bg-gray-100 text-gray-800',
-  'Preparing': 'bg-blue-100 text-blue-800',
-  'Submitted': 'bg-yellow-100 text-yellow-800',
-  'Interview': 'bg-purple-100 text-purple-800',
-  'Result': 'bg-green-100 text-green-800',
+  Preparing: 'bg-blue-100 text-blue-800',
+  Submitted: 'bg-yellow-100 text-yellow-800',
+  Interview: 'bg-purple-100 text-purple-800',
+  Result: 'bg-green-100 text-green-800',
 };
 
-const ProgressCard = ({ scholarship, progress, onViewChecklist }) => {
+const documentStatusDots = {
+  NotReady: 'bg-gray-400',
+  Draft: 'bg-yellow-500',
+  Final: 'bg-blue-500',
+  Uploaded: 'bg-green-500',
+};
+
+const completeDocumentStatuses = new Set(['Final', 'Uploaded']);
+
+const ProgressCard = ({ scholarship, progress, documents = [], onViewChecklist }) => {
   const { daysUntilDeadline, urgency } = scholarship;
-  
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -29,6 +38,19 @@ const ProgressCard = ({ scholarship, progress, onViewChecklist }) => {
     }
   };
 
+  const requiredDocumentIds = scholarship.requiredDocumentIds || [];
+  const requiredDocumentStatuses = requiredDocumentIds.map((id) => {
+    const doc = documents.find((d) => d.id === id);
+    return {
+      id,
+      status: doc?.status || 'NotReady',
+    };
+  });
+
+  const totalDocs = requiredDocumentIds.length;
+  const readyDocs = requiredDocumentStatuses.filter((d) => completeDocumentStatuses.has(d.status)).length;
+  const allDocsReady = totalDocs > 0 && readyDocs === totalDocs;
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-5">
       <div className="flex justify-between items-start mb-3">
@@ -45,22 +67,32 @@ const ProgressCard = ({ scholarship, progress, onViewChecklist }) => {
         <div className="flex items-center text-sm">
           <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+            />
           </svg>
-          <span className="text-gray-600">{scholarship.degreeLevel} · {scholarship.country}</span>
+          <span className="text-gray-600">
+            {scholarship.degreeLevel} · {scholarship.country}
+          </span>
         </div>
 
         <div className={`border rounded-lg p-3 ${getUrgencyBgColor(urgency)}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
               <span className="text-sm font-medium">{formatDate(scholarship.deadline)}</span>
             </div>
-            <span className="text-xs font-semibold">
-              {getDaysText(daysUntilDeadline)}
-            </span>
+            <span className="text-xs font-semibold">{getDaysText(daysUntilDeadline)}</span>
           </div>
         </div>
       </div>
@@ -73,22 +105,56 @@ const ProgressCard = ({ scholarship, progress, onViewChecklist }) => {
         <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
           <div
             className={`h-2.5 rounded-full transition-all duration-300 ${
-              progress.percentage === 100 ? 'bg-green-600' :
-              progress.percentage >= 75 ? 'bg-blue-600' :
-              progress.percentage >= 50 ? 'bg-yellow-500' :
-              'bg-orange-500'
+              progress.percentage === 100
+                ? 'bg-green-600'
+                : progress.percentage >= 75
+                  ? 'bg-blue-600'
+                  : progress.percentage >= 50
+                    ? 'bg-yellow-500'
+                    : 'bg-orange-500'
             }`}
             style={{ width: `${progress.percentage}%` }}
           ></div>
         </div>
         <div className="flex items-center text-xs text-gray-600">
           <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+            />
           </svg>
           <span>
             {progress.completed} of {progress.total} requirements completed
           </span>
         </div>
+
+        {totalDocs > 0 && (
+          <div className="mt-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Documents</span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  allDocsReady ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {allDocsReady ? 'All ready' : `${readyDocs}/${totalDocs} ready`}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1 mt-2">
+              {requiredDocumentStatuses.map((doc) => (
+                <span
+                  key={doc.id}
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    documentStatusDots[doc.status] || documentStatusDots.NotReady
+                  }`}
+                  title={doc.status}
+                ></span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <button

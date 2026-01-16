@@ -1,16 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { getAllDocuments, deleteDocument } from '../db/indexeddb';
 import DocumentCard from './DocumentCard';
 import DocumentForm from './DocumentForm';
 import DocumentStatus from './DocumentStatus';
 
-const DocumentTracker = () => {
+const DocumentTracker = ({
+  scholarships = [],
+  onViewScholarship,
+  initialEditDocumentId,
+  onClearInitialEdit,
+  onDocumentsChanged,
+}) => {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingDocument, setEditingDocument] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
+  const [scholarshipFilterId, setScholarshipFilterId] = useState('All');
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -27,6 +34,42 @@ const DocumentTracker = () => {
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+
+  useEffect(() => {
+    if (!initialEditDocumentId) return;
+    if (documents.length === 0) return;
+
+    const doc = documents.find((d) => d.id === initialEditDocumentId);
+    if (doc) {
+      setEditingDocument(doc);
+      setShowForm(true);
+    }
+
+    onClearInitialEdit?.();
+  }, [initialEditDocumentId, documents, onClearInitialEdit]);
+
+  const scholarshipOptions = useMemo(() => {
+    return scholarships
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((s) => ({ id: s.id, name: s.name }));
+  }, [scholarships]);
+
+  const documentScholarshipsMap = useMemo(() => {
+    const map = {};
+    scholarships.forEach((scholarship) => {
+      const ids = Array.isArray(scholarship.requiredDocumentIds) ? scholarship.requiredDocumentIds : [];
+      ids.forEach((documentId) => {
+        const key = Number(documentId);
+        if (!Number.isFinite(key)) return;
+        if (!map[key]) map[key] = [];
+        map[key].push(scholarship);
+      });
+    });
+
+    Object.values(map).forEach((list) => list.sort((a, b) => a.name.localeCompare(b.name)));
+    return map;
+  }, [scholarships]);
 
   const handleAddDocument = () => {
     setEditingDocument(null);
@@ -47,6 +90,7 @@ const DocumentTracker = () => {
     setShowForm(false);
     setEditingDocument(null);
     await fetchDocuments();
+    await onDocumentsChanged?.();
   };
 
   const handleDeleteDocument = async (id) => {
@@ -55,6 +99,7 @@ const DocumentTracker = () => {
         await deleteDocument(id);
         console.log('Document deleted successfully');
         await fetchDocuments();
+        await onDocumentsChanged?.();
       } catch (error) {
         console.error('Error deleting document:', error);
         alert('Failed to delete document');
@@ -64,31 +109,49 @@ const DocumentTracker = () => {
 
   const getFilteredDocuments = () => {
     let filtered = [...documents];
-    
+
+    if (scholarshipFilterId !== 'All') {
+      const scholarshipId = Number(scholarshipFilterId);
+      const scholarship = scholarships.find((s) => s.id === scholarshipId);
+      const requiredIds = Array.isArray(scholarship?.requiredDocumentIds)
+        ? scholarship.requiredDocumentIds
+        : [];
+
+      filtered = filtered.filter((doc) => requiredIds.includes(doc.id));
+    }
+
     if (statusFilter !== 'All') {
-      filtered = filtered.filter(doc => doc.status === statusFilter);
+      filtered = filtered.filter((doc) => doc.status === statusFilter);
     }
-    
+
     if (typeFilter !== 'All') {
-      filtered = filtered.filter(doc => doc.type === typeFilter);
+      filtered = filtered.filter((doc) => doc.type === typeFilter);
     }
-    
+
     return filtered;
   };
 
   const filteredDocuments = getFilteredDocuments();
 
   const statusOptions = ['All', 'NotReady', 'Draft', 'Final', 'Uploaded'];
-  const typeOptions = ['All', 'CV', 'Transcript', 'LanguageCertificate', 'RecommendationLetter', 'LoA', 'PersonalStatement'];
+  const typeOptions = [
+    'All',
+    'CV',
+    'Transcript',
+    'LanguageCertificate',
+    'RecommendationLetter',
+    'LoA',
+    'PersonalStatement',
+  ];
 
   const getTypeLabel = (type) => {
     const labels = {
-      'CV': 'CV',
-      'Transcript': 'Transcript',
-      'LanguageCertificate': 'Language Certificate',
-      'RecommendationLetter': 'Recommendation Letter',
-      'LoA': 'LoA',
-      'PersonalStatement': 'Personal Statement'
+      CV: 'CV',
+      Transcript: 'Transcript',
+      LanguageCertificate: 'Language Certificate',
+      RecommendationLetter: 'Recommendation Letter',
+      LoA: 'LoA',
+      PersonalStatement: 'Personal Statement',
     };
     return labels[type] || type;
   };
@@ -116,9 +179,7 @@ const DocumentTracker = () => {
             + Add Document
           </button>
         </div>
-        <p className="text-gray-600">
-          Manage your application documents across all scholarships
-        </p>
+        <p className="text-gray-600">Manage your application documents across all scholarships</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -129,16 +190,33 @@ const DocumentTracker = () => {
         <div className="lg:col-span-3">
           {showForm && (
             <div className="mb-8">
-              <DocumentForm
-                document={editingDocument}
-                onSave={handleSave}
-                onCancel={handleCancel}
-              />
+              <DocumentForm document={editingDocument} onSave={handleSave} onCancel={handleCancel} />
             </div>
           )}
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
             <div className="flex flex-wrap items-center gap-4">
+              {scholarshipOptions.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="scholarshipFilter" className="text-sm font-medium text-gray-700">
+                    Scholarship:
+                  </label>
+                  <select
+                    id="scholarshipFilter"
+                    value={scholarshipFilterId}
+                    onChange={(e) => setScholarshipFilterId(e.target.value)}
+                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  >
+                    <option value="All">All Scholarships</option>
+                    {scholarshipOptions.map((s) => (
+                      <option key={s.id} value={String(s.id)}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="flex items-center space-x-2">
                 <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700">
                   Status:
@@ -149,11 +227,9 @@ const DocumentTracker = () => {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
-                  {statusOptions.map(option => (
+                  {statusOptions.map((option) => (
                     <option key={option} value={option}>
-                      {option === 'All' ? 'All Statuses' : 
-                       option === 'NotReady' ? 'Not Ready' : 
-                       option}
+                      {option === 'All' ? 'All Statuses' : option === 'NotReady' ? 'Not Ready' : option}
                     </option>
                   ))}
                 </select>
@@ -169,7 +245,7 @@ const DocumentTracker = () => {
                   onChange={(e) => setTypeFilter(e.target.value)}
                   className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
-                  {typeOptions.map(option => (
+                  {typeOptions.map((option) => (
                     <option key={option} value={option}>
                       {option === 'All' ? 'All Types' : getTypeLabel(option)}
                     </option>
@@ -183,7 +259,12 @@ const DocumentTracker = () => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
               <div className="mb-4">
                 <svg className="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No documents yet</h3>
@@ -199,7 +280,12 @@ const DocumentTracker = () => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
               <div className="mb-4">
                 <svg className="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No documents match your filters</h3>
@@ -207,12 +293,14 @@ const DocumentTracker = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredDocuments.map(document => (
+              {filteredDocuments.map((document) => (
                 <DocumentCard
                   key={document.id}
                   document={document}
                   onEdit={handleEditDocument}
                   onDelete={handleDeleteDocument}
+                  requiredByScholarships={documentScholarshipsMap[document.id] || []}
+                  onViewScholarship={onViewScholarship}
                 />
               ))}
             </div>

@@ -20,6 +20,14 @@ const DocumentForm = ({ document: existingDocument, onSave, onCancel }) => {
         fileLink: existingDocument.fileLink || '',
         notes: existingDocument.notes || ''
       });
+    } else {
+      setFormData({
+        name: '',
+        type: 'CV',
+        status: 'NotReady',
+        fileLink: '',
+        notes: ''
+      });
     }
   }, [existingDocument]);
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import DocumentRequirementForm from './DocumentRequirementForm';
 
-const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
+const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: '',
     provider: '',
@@ -9,6 +10,7 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
     applicationYear: new Date().getFullYear(),
     deadline: '',
     status: 'Not Started',
+    requiredDocumentIds: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -23,22 +25,41 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
         applicationYear: scholarship.applicationYear,
         deadline: scholarship.deadline.split('T')[0],
         status: scholarship.status,
+        requiredDocumentIds: scholarship.requiredDocumentIds || [],
+      });
+    } else {
+      setFormData({
+        name: '',
+        provider: '',
+        degreeLevel: 'Master',
+        country: '',
+        applicationYear: new Date().getFullYear(),
+        deadline: '',
+        status: 'Not Started',
+        requiredDocumentIds: [],
       });
     }
   }, [scholarship]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: '',
       }));
     }
+  };
+
+  const handleRequiredDocumentsChange = (requiredDocumentIds) => {
+    setFormData((prev) => ({
+      ...prev,
+      requiredDocumentIds,
+    }));
   };
 
   const validateForm = () => {
@@ -78,7 +99,7 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
         {scholarship ? 'Edit Scholarship' : 'Add New Scholarship'}
       </h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -90,7 +111,9 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full px-3 py-2 border ${errors.name ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+            className={`w-full px-3 py-2 border ${
+              errors.name ? 'border-red-300' : 'border-gray-300'
+            } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
             placeholder="e.g., Fulbright Foreign Student Program"
           />
           {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -106,7 +129,9 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
             name="provider"
             value={formData.provider}
             onChange={handleChange}
-            className={`w-full px-3 py-2 border ${errors.provider ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+            className={`w-full px-3 py-2 border ${
+              errors.provider ? 'border-red-300' : 'border-gray-300'
+            } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
             placeholder="e.g., Fulbright Commission"
           />
           {errors.provider && <p className="mt-1 text-sm text-red-600">{errors.provider}</p>}
@@ -141,9 +166,13 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
               onChange={handleChange}
               min="2000"
               max="2100"
-              className={`w-full px-3 py-2 border ${errors.applicationYear ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+              className={`w-full px-3 py-2 border ${
+                errors.applicationYear ? 'border-red-300' : 'border-gray-300'
+              } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
             />
-            {errors.applicationYear && <p className="mt-1 text-sm text-red-600">{errors.applicationYear}</p>}
+            {errors.applicationYear && (
+              <p className="mt-1 text-sm text-red-600">{errors.applicationYear}</p>
+            )}
           </div>
         </div>
 
@@ -157,7 +186,9 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
             name="country"
             value={formData.country}
             onChange={handleChange}
-            className={`w-full px-3 py-2 border ${errors.country ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+            className={`w-full px-3 py-2 border ${
+              errors.country ? 'border-red-300' : 'border-gray-300'
+            } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
             placeholder="e.g., United States"
           />
           {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country}</p>}
@@ -174,7 +205,9 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
               name="deadline"
               value={formData.deadline}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${errors.deadline ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+              className={`w-full px-3 py-2 border ${
+                errors.deadline ? 'border-red-300' : 'border-gray-300'
+              } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
             />
             {errors.deadline && <p className="mt-1 text-sm text-red-600">{errors.deadline}</p>}
           </div>
@@ -198,6 +231,12 @@ const ScholarshipForm = ({ scholarship, onSave, onCancel }) => {
             </select>
           </div>
         </div>
+
+        <DocumentRequirementForm
+          documents={documents}
+          selectedIds={formData.requiredDocumentIds}
+          onChange={handleRequiredDocumentsChange}
+        />
 
         <div className="flex gap-3 pt-4">
           <button

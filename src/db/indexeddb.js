@@ -6,6 +6,22 @@ const DOCUMENTS_STORE_NAME = 'documents';
 
 let db = null;
 
+const normalizeRequiredDocumentIds = (value) => {
+  if (!Array.isArray(value)) return [];
+  const ids = value
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id));
+  return Array.from(new Set(ids));
+};
+
+const normalizeScholarship = (scholarship) => {
+  if (!scholarship) return scholarship;
+  return {
+    ...scholarship,
+    requiredDocumentIds: normalizeRequiredDocumentIds(scholarship.requiredDocumentIds),
+  };
+};
+
 export const initDB = () => {
   return new Promise((resolve, reject) => {
     if (db) {
@@ -59,6 +75,7 @@ export const createScholarship = (data) => {
       
       const scholarship = {
         ...data,
+        requiredDocumentIds: normalizeRequiredDocumentIds(data?.requiredDocumentIds),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -89,7 +106,7 @@ export const getAllScholarships = () => {
       const request = objectStore.getAll();
 
       request.onsuccess = () => {
-        const scholarships = request.result;
+        const scholarships = request.result.map(normalizeScholarship);
         console.log('Retrieved scholarships:', scholarships.length);
         resolve(scholarships);
       };
@@ -114,7 +131,7 @@ export const getScholarship = (id) => {
 
       request.onsuccess = () => {
         console.log('Retrieved scholarship:', id);
-        resolve(request.result);
+        resolve(normalizeScholarship(request.result));
       };
 
       request.onerror = () => {
@@ -146,6 +163,9 @@ export const updateScholarship = (id, data) => {
         const updated = {
           ...existing,
           ...data,
+          requiredDocumentIds: normalizeRequiredDocumentIds(
+            data?.requiredDocumentIds ?? existing.requiredDocumentIds
+          ),
           updatedAt: new Date().toISOString()
         };
 
@@ -543,6 +563,78 @@ export const deleteDocument = (id) => {
 
       request.onerror = () => {
         console.error('Error deleting document:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getScholarshipRequiredDocuments = (scholarshipId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([STORE_NAME, DOCUMENTS_STORE_NAME], 'readonly');
+      const scholarshipStore = transaction.objectStore(STORE_NAME);
+      const documentsStore = transaction.objectStore(DOCUMENTS_STORE_NAME);
+
+      const scholarshipRequest = scholarshipStore.get(scholarshipId);
+
+      scholarshipRequest.onsuccess = async () => {
+        const scholarship = normalizeScholarship(scholarshipRequest.result);
+        if (!scholarship) {
+          resolve([]);
+          return;
+        }
+
+        const requiredIds = scholarship.requiredDocumentIds || [];
+        if (requiredIds.length === 0) {
+          resolve([]);
+          return;
+        }
+
+        const documentPromises = requiredIds.map(
+          (id) =>
+            new Promise((res) => {
+              const docRequest = documentsStore.get(id);
+              docRequest.onsuccess = () => res(docRequest.result || null);
+              docRequest.onerror = () => res(null);
+            })
+        );
+
+        const docs = await Promise.all(documentPromises);
+        resolve(docs.filter(Boolean));
+      };
+
+      scholarshipRequest.onerror = () => {
+        console.error('Error getting scholarship for required documents:', scholarshipRequest.error);
+        reject(scholarshipRequest.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getDocumentScholarships = (documentId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([STORE_NAME], 'readonly');
+      const scholarshipStore = transaction.objectStore(STORE_NAME);
+      const request = scholarshipStore.getAll();
+
+      request.onsuccess = () => {
+        const scholarships = request.result
+          .map(normalizeScholarship)
+          .filter((s) => (s.requiredDocumentIds || []).includes(Number(documentId)));
+
+        resolve(scholarships);
+      };
+
+      request.onerror = () => {
+        console.error('Error getting scholarships for document:', request.error);
         reject(request.error);
       };
     } catch (error) {

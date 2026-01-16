@@ -1,12 +1,15 @@
 import React, { useCallback } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 
-const ScholarshipList = ({ scholarships, onEdit, onDelete, onAddNew, onViewChecklist, checklistItemsByScholarship }) => {
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
-
+const ScholarshipList = ({
+  scholarships,
+  onEdit,
+  onDelete,
+  onAddNew,
+  onViewChecklist,
+  checklistItemsByScholarship,
+  documents = [],
+}) => {
   const handleDelete = useCallback((id) => {
     if (window.confirm('Are you sure you want to delete this scholarship?')) {
       onDelete(id);
@@ -60,6 +63,7 @@ const ScholarshipList = ({ scholarships, onEdit, onDelete, onAddNew, onViewCheck
             onDelete={() => handleDelete(scholarship.id)}
             onViewChecklist={onViewChecklist}
             checklistItems={checklistItemsByScholarship?.[scholarship.id] || []}
+            documents={documents}
           />
         ))}
       </div>
