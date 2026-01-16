@@ -161,7 +161,7 @@ const DocumentTracker = ({
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading documents...</p>
+          <p className="text-gray-600 dark:text-gray-300">Loading documents...</p>
         </div>
       </div>
     );
@@ -171,7 +171,7 @@ const DocumentTracker = ({
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-3xl font-bold text-gray-900">Document Tracker</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Document Tracker</h1>
           <button
             onClick={handleAddDocument}
             className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium"
@@ -179,7 +179,7 @@ const DocumentTracker = ({
             + Add Document
           </button>
         </div>
-        <p className="text-gray-600">Manage your application documents across all scholarships</p>
+        <p className="text-gray-600 dark:text-gray-300">Manage your application documents across all scholarships</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -194,18 +194,18 @@ const DocumentTracker = ({
             </div>
           )}
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
             <div className="flex flex-wrap items-center gap-4">
               {scholarshipOptions.length > 0 && (
                 <div className="flex items-center space-x-2">
-                  <label htmlFor="scholarshipFilter" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="scholarshipFilter" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                     Scholarship:
                   </label>
                   <select
                     id="scholarshipFilter"
                     value={scholarshipFilterId}
                     onChange={(e) => setScholarshipFilterId(e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     <option value="All">All Scholarships</option>
                     {scholarshipOptions.map((s) => (
@@ -218,14 +218,14 @@ const DocumentTracker = ({
               )}
 
               <div className="flex items-center space-x-2">
-                <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700">
+                <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Status:
                 </label>
                 <select
                   id="statusFilter"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   {statusOptions.map((option) => (
                     <option key={option} value={option}>
@@ -236,14 +236,14 @@ const DocumentTracker = ({
               </div>
 
               <div className="flex items-center space-x-2">
-                <label htmlFor="typeFilter" className="text-sm font-medium text-gray-700">
+                <label htmlFor="typeFilter" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Type:
                 </label>
                 <select
                   id="typeFilter"
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   {typeOptions.map((option) => (
                     <option key={option} value={option}>
@@ -256,9 +256,9 @@ const DocumentTracker = ({
           </div>
 
           {documents.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
               <div className="mb-4">
-                <svg className="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -267,8 +267,8 @@ const DocumentTracker = ({
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No documents yet</h3>
-              <p className="text-gray-600 mb-6">Start by adding your first application document</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No documents yet</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Start by adding your first application document</p>
               <button
                 onClick={handleAddDocument}
                 className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium"
@@ -277,9 +277,9 @@ const DocumentTracker = ({
               </button>
             </div>
           ) : filteredDocuments.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
               <div className="mb-4">
-                <svg className="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -288,8 +288,8 @@ const DocumentTracker = ({
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No documents match your filters</h3>
-              <p className="text-gray-600">Try adjusting your filters or add a new document</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No documents match your filters</h3>
+              <p className="text-gray-600 dark:text-gray-300">Try adjusting your filters or add a new document</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

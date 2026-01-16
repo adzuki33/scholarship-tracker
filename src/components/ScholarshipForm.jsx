@@ -95,15 +95,15 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
         {scholarship ? 'Edit Scholarship' : 'Add New Scholarship'}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Scholarship Name <span className="text-red-500">*</span>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            Scholarship Name <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -112,16 +112,16 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
             value={formData.name}
             onChange={handleChange}
             className={`w-full px-3 py-2 border ${
-              errors.name ? 'border-red-300' : 'border-gray-300'
-            } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+              errors.name ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors`}
             placeholder="e.g., Fulbright Foreign Student Program"
           />
-          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+          {errors.name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
         </div>
 
         <div>
-          <label htmlFor="provider" className="block text-sm font-medium text-gray-700 mb-1">
-            Provider/Organization <span className="text-red-500">*</span>
+          <label htmlFor="provider" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            Provider/Organization <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -130,16 +130,16 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
             value={formData.provider}
             onChange={handleChange}
             className={`w-full px-3 py-2 border ${
-              errors.provider ? 'border-red-300' : 'border-gray-300'
-            } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+              errors.provider ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors`}
             placeholder="e.g., Fulbright Commission"
           />
-          {errors.provider && <p className="mt-1 text-sm text-red-600">{errors.provider}</p>}
+          {errors.provider && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.provider}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="degreeLevel" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="degreeLevel" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Degree Level
             </label>
             <select
@@ -147,7 +147,7 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
               name="degreeLevel"
               value={formData.degreeLevel}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
             >
               <option value="Master">Master</option>
               <option value="Doctor">Doctor</option>
@@ -155,8 +155,8 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
           </div>
 
           <div>
-            <label htmlFor="applicationYear" className="block text-sm font-medium text-gray-700 mb-1">
-              Application Year <span className="text-red-500">*</span>
+            <label htmlFor="applicationYear" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Application Year <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               type="number"
@@ -167,18 +167,18 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
               min="2000"
               max="2100"
               className={`w-full px-3 py-2 border ${
-                errors.applicationYear ? 'border-red-300' : 'border-gray-300'
-              } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+                errors.applicationYear ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors`}
             />
             {errors.applicationYear && (
-              <p className="mt-1 text-sm text-red-600">{errors.applicationYear}</p>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.applicationYear}</p>
             )}
           </div>
         </div>
 
         <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-            Country <span className="text-red-500">*</span>
+          <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            Country <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -187,17 +187,17 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
             value={formData.country}
             onChange={handleChange}
             className={`w-full px-3 py-2 border ${
-              errors.country ? 'border-red-300' : 'border-gray-300'
-            } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+              errors.country ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors`}
             placeholder="e.g., United States"
           />
-          {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country}</p>}
+          {errors.country && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.country}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
-              Application Deadline <span className="text-red-500">*</span>
+            <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Application Deadline <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               type="date"
@@ -206,14 +206,14 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
               value={formData.deadline}
               onChange={handleChange}
               className={`w-full px-3 py-2 border ${
-                errors.deadline ? 'border-red-300' : 'border-gray-300'
-              } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+                errors.deadline ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors`}
             />
-            {errors.deadline && <p className="mt-1 text-sm text-red-600">{errors.deadline}</p>}
+            {errors.deadline && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.deadline}</p>}
           </div>
 
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Application Status
             </label>
             <select
@@ -221,7 +221,7 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
             >
               <option value="Not Started">Not Started</option>
               <option value="Preparing">Preparing</option>
@@ -241,14 +241,14 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel }) => {
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            className="flex-1 px-4 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            className="flex-1 px-4 py-2.5 text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800"
           >
             {scholarship ? 'Update Scholarship' : 'Create Scholarship'}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 px-4 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1"
+            className="flex-1 px-4 py-2.5 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800"
           >
             Cancel
           </button>

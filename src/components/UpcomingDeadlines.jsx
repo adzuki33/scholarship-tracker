@@ -31,18 +31,18 @@ const UpcomingDeadlines = ({ scholarships, onViewScholarship }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Upcoming Deadlines</h3>
-        <span className="text-sm text-gray-500">{scholarships.length} total</span>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Deadlines</h3>
+        <span className="text-sm text-gray-500 dark:text-gray-400">{scholarships.length} total</span>
       </div>
 
       {scholarships.length === 0 ? (
         <div className="text-center py-8">
-          <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <p className="text-sm text-gray-600">No scholarships yet</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">No scholarships yet</p>
         </div>
       ) : (
         <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -63,8 +63,8 @@ const UpcomingDeadlines = ({ scholarships, onViewScholarship }) => {
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-gray-900 truncate">{scholarship.name}</h4>
-                  <p className="text-xs text-gray-600 truncate">{scholarship.provider}</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white truncate">{scholarship.name}</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 truncate">{scholarship.provider}</p>
                 </div>
                 <div className="ml-3 flex-shrink-0">
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold">

@@ -4,6 +4,7 @@ import ScholarshipList from './components/ScholarshipList';
 import ScholarshipForm from './components/ScholarshipForm';
 import ChecklistView from './components/ChecklistView';
 import DocumentTracker from './components/DocumentTracker';
+import ThemeToggle from './components/ThemeToggle';
 import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems, getAllDocuments } from './db/indexeddb';
 
 function App() {
@@ -203,37 +204,40 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-3">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
-              <h1 className="text-2xl font-bold text-gray-900">Scholarship Tracker</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Scholarship Tracker</h1>
             </div>
-            {mainTab === 'scholarships' && view === 'form' && (
-              <button
-                onClick={handleCancel}
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-              >
-                ← Back to List
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              {mainTab === 'scholarships' && view === 'form' && (
+                <button
+                  onClick={handleCancel}
+                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors"
+                >
+                  ← Back to List
+                </button>
+              )}
+            </div>
           </div>
           
-          <div className="flex items-center space-x-1 border-t border-gray-200">
+          <div className="flex items-center space-x-1 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={() => {
                 setMainTab('dashboard');
@@ -242,8 +246,8 @@ function App() {
               }}
               className={`px-4 py-2 font-medium text-sm transition-colors ${
                 mainTab === 'dashboard'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               Dashboard
@@ -256,8 +260,8 @@ function App() {
               }}
               className={`px-4 py-2 font-medium text-sm transition-colors ${
                 mainTab === 'scholarships'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               Scholarships
@@ -270,8 +274,8 @@ function App() {
               }}
               className={`px-4 py-2 font-medium text-sm transition-colors ${
                 mainTab === 'documents'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               Documents
@@ -331,9 +335,9 @@ function App() {
         )}
       </main>
 
-      <footer className="bg-white border-t border-gray-200 mt-12">
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             Scholarship Tracker · Data stored locally with IndexedDB
           </p>
         </div>

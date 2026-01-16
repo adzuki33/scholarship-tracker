@@ -84,12 +84,12 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
                 onChange={(e) => setEditedText(e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, handleSaveText)}
                 onBlur={handleSaveText}
-                className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoFocus
               />
               <button
                 onClick={handleCancelText}
-                className="p-1 text-gray-400 hover:text-gray-600"
+                className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-300"
                 aria-label="Cancel"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,14 +121,14 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
                         handleCancelNote();
                       }
                     }}
-                    className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     rows={2}
                     placeholder="Add a note..."
                     autoFocus
                   />
                   <button
                     onClick={handleCancelNote}
-                    className="p-1 text-gray-400 hover:text-gray-600 mt-0.5"
+                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-300 mt-0.5"
                     aria-label="Cancel"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,13 +138,13 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
                 </div>
               ) : (
                 <div className="flex items-start gap-2 group">
-                  <p className="text-xs text-gray-500 flex-1">{item.note}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 flex-1">{item.note}</p>
                   <button
                     onClick={() => {
                       setEditedNote(item.note);
                       setIsEditingNote(true);
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 hover:text-gray-600 transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-300 transition-opacity"
                     aria-label="Edit note"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +158,7 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
             !item.note && (
               <button
                 onClick={() => setIsEditingNote(true)}
-                className="mt-2 text-xs text-blue-600 hover:text-blue-700"
+                className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700"
               >
                 + Add note
               </button>
@@ -168,7 +168,7 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
 
         <div className="flex items-center gap-1 flex-shrink-0">
           <div
-            className="cursor-grab active:cursor-grabbing p-1.5 text-gray-400 hover:text-gray-600"
+            className="cursor-grab active:cursor-grabbing p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-300"
             aria-label="Drag to reorder"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +177,7 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
           </div>
           <button
             onClick={handleDelete}
-            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:text-red-400 transition-colors"
             aria-label="Delete item"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
