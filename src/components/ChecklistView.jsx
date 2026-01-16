@@ -94,7 +94,7 @@ const ChecklistView = ({
     <div className="max-w-3xl mx-auto">
       <button
         onClick={onBack}
-        className="flex items-center text-gray-600 hover:text-gray-900 font-medium transition-colors mb-6"
+        className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-white font-medium transition-colors mb-6"
       >
         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -102,10 +102,10 @@ const ChecklistView = ({
         Back to Scholarships
       </button>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{scholarship.name}</h2>
-        <p className="text-gray-600 mb-4">{scholarship.provider}</p>
-        <div className="flex items-center gap-4 text-sm text-gray-500">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{scholarship.name}</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">{scholarship.provider}</p>
+        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
           <div className="flex items-center">
             <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -124,25 +124,25 @@ const ChecklistView = ({
 
       <DocumentRequirements scholarship={scholarship} documents={documents} onViewDocument={onViewDocument} />
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-gray-900">Progress</h3>
-          <span className="text-sm font-medium text-gray-600">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Progress</h3>
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
             {completedCount} of {totalCount} items completed
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
           <div
             className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
-        <p className="text-sm text-gray-500 text-right">{progress}% complete</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 text-right">{progress}% complete</p>
       </div>
 
       <div className="mb-4">
         {isAddingItem ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
             <input
               type="text"
               value={newItemText}
@@ -157,7 +157,7 @@ const ChecklistView = ({
                 }
               }}
               placeholder="Enter requirement or task..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               autoFocus
             />
             <div className="flex gap-2 mt-3">
@@ -172,7 +172,7 @@ const ChecklistView = ({
                   setIsAddingItem(false);
                   setNewItemText('');
                 }}
-                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1"
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-md hover:bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1"
               >
                 Cancel
               </button>
@@ -181,7 +181,7 @@ const ChecklistView = ({
         ) : (
           <button
             onClick={() => setIsAddingItem(true)}
-            className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:border-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
           >
             + Add New Requirement
           </button>
@@ -190,12 +190,12 @@ const ChecklistView = ({
 
       <div className="space-y-3">
         {checklistItems.length === 0 ? (
-          <div className="text-center py-12 bg-white border border-gray-200 rounded-lg">
-            <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No requirements yet</h3>
-            <p className="text-gray-500">Start by adding requirements or tasks for this scholarship.</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No requirements yet</h3>
+            <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Start by adding requirements or tasks for this scholarship.</p>
           </div>
         ) : (
           checklistItems.map((item) => (

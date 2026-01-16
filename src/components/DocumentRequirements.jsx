@@ -42,29 +42,29 @@ const DocumentRequirements = ({ scholarship, documents = [], onViewDocument }) =
   if (!scholarship) return null;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6 mb-6">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Required Documents</h3>
-          <p className="text-sm text-gray-600 mt-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Required Documents</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
             Track global document completion for this scholarship.
           </p>
         </div>
         {totalCount > 0 ? (
           <div className="text-right">
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold text-gray-900">{completedCount}</span> of{' '}
-              <span className="font-semibold text-gray-900">{totalCount}</span> documents complete
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              <span className="font-semibold text-gray-900 dark:text-white">{completedCount}</span> of{' '}
+              <span className="font-semibold text-gray-900 dark:text-white">{totalCount}</span> documents complete
             </p>
-            <p className="text-xs text-gray-500 mt-0.5">{percentage}%</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-0.5">{percentage}%</p>
           </div>
         ) : (
-          <span className="text-sm text-gray-600">No required documents</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300">No required documents</span>
         )}
       </div>
 
       {totalCount > 0 && (
-        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-5">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-5">
           <div
             className={`h-2.5 rounded-full transition-all duration-300 ${
               percentage === 100 ? 'bg-green-600' : percentage >= 50 ? 'bg-blue-600' : 'bg-gray-400'
@@ -75,8 +75,8 @@ const DocumentRequirements = ({ scholarship, documents = [], onViewDocument }) =
       )}
 
       {totalCount === 0 ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
-          <p className="text-sm text-gray-700">No global documents have been marked as required for this scholarship.</p>
+        <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-md p-4">
+          <p className="text-sm text-gray-700 dark:text-gray-200">No global documents have been marked as required for this scholarship.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -85,15 +85,15 @@ const DocumentRequirements = ({ scholarship, documents = [], onViewDocument }) =
             return (
               <div
                 key={doc.id}
-                className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:bg-gray-700 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className={`w-2.5 h-2.5 rounded-full ${meta.dot}`}></span>
-                      <p className="text-sm font-semibold text-gray-900 truncate">{doc.name}</p>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{doc.name}</p>
                     </div>
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
                       {getTypeLabel(doc.type)} · Last updated: {formatDate(doc.lastUpdated)}
                     </p>
                     {doc.fileLink ? (
@@ -101,7 +101,7 @@ const DocumentRequirements = ({ scholarship, documents = [], onViewDocument }) =
                         href={doc.fileLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline break-all mt-1 inline-block"
+                        className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline break-all mt-1 inline-block"
                         onClick={(e) => {
                           if (doc.fileLink && !doc.fileLink.startsWith('http')) {
                             e.preventDefault();
@@ -122,7 +122,7 @@ const DocumentRequirements = ({ scholarship, documents = [], onViewDocument }) =
                       <button
                         type="button"
                         onClick={() => onViewDocument(doc.id)}
-                        className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                        className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-md transition-colors"
                       >
                         View/Edit
                       </button>

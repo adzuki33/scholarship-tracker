@@ -53,10 +53,10 @@ const DocumentStatus = ({ documents }) => {
   const progress = calculateProgress();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">Document Overview</h2>
-        <span className="text-2xl font-bold text-gray-900">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Document Overview</h2>
+        <span className="text-2xl font-bold text-gray-900 dark:text-white">
           {documents.length}
         </span>
       </div>
@@ -71,18 +71,18 @@ const DocumentStatus = ({ documents }) => {
             <div key={status} className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`} />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   {getStatusLabel(status)}
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-20 bg-gray-200 rounded-full h-2">
+                <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${getStatusColor(status)}`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <span className="text-sm font-medium text-gray-900 min-w-8 text-right">
+                <span className="text-sm font-medium text-gray-900 dark:text-white min-w-8 text-right">
                   {count}
                 </span>
               </div>
@@ -91,12 +91,12 @@ const DocumentStatus = ({ documents }) => {
         })}
       </div>
 
-      <div className="border-t border-gray-200 pt-4">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-          <span className="text-sm font-bold text-gray-900">{progress}%</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Overall Progress</span>
+          <span className="text-sm font-bold text-gray-900 dark:text-white">{progress}%</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
           <div
             className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -105,13 +105,13 @@ const DocumentStatus = ({ documents }) => {
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-500">Total Documents</p>
-          <p className="text-lg font-bold text-gray-900">{documents.length}</p>
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Total Documents</p>
+          <p className="text-lg font-bold text-gray-900 dark:text-white">{documents.length}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-500">Ready to Use</p>
-          <p className="text-lg font-bold text-green-600">
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Ready to Use</p>
+          <p className="text-lg font-bold text-green-600 dark:text-green-400">
             {statusCounts.Final + statusCounts.Uploaded}
           </p>
         </div>
