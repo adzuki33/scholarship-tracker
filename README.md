@@ -167,6 +167,41 @@ npm run build
 
 The built files will be in the `dist/` directory, ready for deployment to any static hosting service.
 
+## Deployment
+
+### GitHub Pages
+
+This project is configured for automatic deployment to GitHub Pages. When you push to the `main` branch, a GitHub Actions workflow will automatically build and deploy your application.
+
+#### Setup Instructions
+
+1. Go to your repository Settings → Pages
+2. Set Source to "GitHub Actions" (recommended) or "Deploy from a branch" (gh-pages branch)
+3. Push changes to `main` to trigger automatic deployment
+
+Your app will be available at: `https://[your-username].github.io/scholarship-tracker/`
+
+For detailed setup instructions, see [GITHUB_PAGES_SETUP.md](./GITHUB_PAGES_SETUP.md)
+
+#### Manual Deployment
+
+You can also deploy manually:
+
+```bash
+npm run deploy
+```
+
+This builds the app and pushes to the `gh-pages` branch.
+
+### Seed Data
+
+The application includes seed data that loads automatically on first visit:
+- Sample scholarships with deadlines
+- Pre-configured checklist items
+- Document templates
+
+After the first load, user data is preserved locally. Users can clear their browser data to reset to seed data.
+
 ## License
 
 MIT
