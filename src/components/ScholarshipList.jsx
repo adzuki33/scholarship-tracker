@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import SearchBar from './SearchBar';
 import FilterPanel from './FilterPanel';
+import MobileFilterDrawer from './MobileFilterDrawer';
 import { searchScholarships } from '../utils/searchScholarships';
 import { filterScholarships } from '../utils/filterScholarships';
 
@@ -16,6 +17,7 @@ const ScholarshipList = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({});
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Apply search and filters
   const filteredScholarships = useMemo(() => {
