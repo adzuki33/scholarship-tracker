@@ -1,9 +1,10 @@
 const DB_NAME = 'ScholarshipTrackerDB';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const STORE_NAME = 'scholarships';
 const CHECKLIST_STORE_NAME = 'checklistItems';
 const DOCUMENTS_STORE_NAME = 'documents';
 const TEMPLATES_STORE_NAME = 'templates';
+const METADATA_STORE_NAME = 'metadata';
 
 let db = null;
 
@@ -68,6 +69,10 @@ export const initDB = () => {
         templatesStore.createIndex('createdBy', 'createdBy', { unique: false });
         templatesStore.createIndex('category', 'category', { unique: false });
         console.log('Object store created:', TEMPLATES_STORE_NAME);
+      }
+      if (!db.objectStoreNames.contains(METADATA_STORE_NAME)) {
+        const metadataStore = db.createObjectStore(METADATA_STORE_NAME, { keyPath: 'key' });
+        console.log('Object store created:', METADATA_STORE_NAME);
       }
     };
   });
@@ -884,6 +889,62 @@ export const getUserTemplates = () => {
 
       request.onerror = () => {
         console.error('Error getting user templates:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+// Metadata storage functions for seed data versioning
+export const setMetadata = (key, value) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([METADATA_STORE_NAME], 'readwrite');
+      const objectStore = transaction.objectStore(METADATA_STORE_NAME);
+      
+      const metadata = {
+        key,
+        value,
+        updatedAt: new Date().toISOString()
+      };
+
+      const request = objectStore.put(metadata);
+
+      request.onsuccess = () => {
+        console.log('Metadata set:', key, value);
+        resolve(metadata);
+      };
+
+      request.onerror = () => {
+        console.error('Error setting metadata:', request.error);
+        reject(request.error);
+      };
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getMetadata = (key) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initDB();
+      const transaction = db.transaction([METADATA_STORE_NAME], 'readonly');
+      const objectStore = transaction.objectStore(METADATA_STORE_NAME);
+      
+      const request = objectStore.get(key);
+
+      request.onsuccess = () => {
+        const result = request.result;
+        console.log('Metadata retrieved:', key, result?.value);
+        resolve(result?.value || null);
+      };
+
+      request.onerror = () => {
+        console.error('Error getting metadata:', request.error);
         reject(request.error);
       };
     } catch (error) {
