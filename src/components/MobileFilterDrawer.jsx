@@ -141,7 +141,8 @@ const MobileFilterDrawer = ({
             Apply Filters
           </button>
         </div>
-      </div></div></div></div>
+      </div>
+    </div>
   );
 };
 

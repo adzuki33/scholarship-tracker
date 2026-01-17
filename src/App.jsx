@@ -10,6 +10,7 @@ import ThemeToggle from './components/ThemeToggle';
 import MobileMenu from './components/MobileMenu';
 import BottomNav from './components/BottomNav';
 import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, updateChecklistItem, deleteChecklistItem, reorderChecklistItems, getAllDocuments } from './db/indexeddb';
+import { seedDatabase } from './utils/seedDatabase';
 import TemplateManager from './components/TemplateManager';
 
 function App() {
@@ -26,9 +27,14 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    loadScholarships();
-    loadAllChecklistItems();
-    loadDocuments();
+    seedDatabase().then(() => {
+      loadScholarships();
+      loadDocuments();
+    }).catch(error => {
+      console.error('Error seeding database:', error);
+      loadScholarships();
+      loadDocuments();
+    });
   }, []);
 
   const loadAllChecklistItems = async () => {
