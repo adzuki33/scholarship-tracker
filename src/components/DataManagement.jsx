@@ -60,10 +60,14 @@ const DataManagement = ({ onImportComplete }) => {
       setStatusMessage(null);
       
       const result = await exportSeedData();
-      
+
+      const message = result.createdAt
+        ? `Successfully exported seed data including ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates to ${result.filename}. CreatedAt: ${result.createdAt}.`
+        : `Successfully exported seed data including ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates to ${result.filename}`;
+
       setStatusMessage({
         title: 'Seed Data Export Successful',
-        message: `Successfully exported seed data including ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates to ${result.filename}`,
+        message: message,
         details: result.stats
       });
       setStatusType('success');
@@ -89,10 +93,14 @@ const DataManagement = ({ onImportComplete }) => {
       setStatusMessage(null);
       
       const result = await saveSeedDataToFile();
-      
+
+      const message = result.createdAt
+        ? `Seed data prepared with ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates. CreatedAt: ${result.createdAt}.`
+        : `Seed data prepared with ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates.`;
+
       setStatusMessage({
         title: 'Seed Data Prepared Successfully',
-        message: `Seed data prepared with ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates.`,
+        message: message,
         details: result.stats,
         instructions: result.instructions
       });
