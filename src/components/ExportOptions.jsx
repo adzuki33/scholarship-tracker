@@ -6,8 +6,7 @@ const ExportOptions = ({ onRegularExport, onSeedExport, onSaveSeedData, loading,
   useEffect(() => {
     // Calculate estimated file size for seed data (includes templates)
     const estimatedSize = JSON.stringify({
-      version: '1.0',
-      exportedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       data: {
         scholarships: Array(stats.scholarships).fill({}).map((_, i) => ({
           id: i + 1,

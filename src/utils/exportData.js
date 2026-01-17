@@ -87,8 +87,7 @@ export const exportSeedData = async () => {
     
     // Prepare export data structure (seed format - includes templates)
     const exportData = {
-      version: '1.0',
-      exportedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       data: {
         scholarships,
         checklistItems,
@@ -122,6 +121,7 @@ export const exportSeedData = async () => {
     return {
       success: true,
       filename,
+      createdAt: exportData.createdAt,
       stats: {
         scholarships: scholarships.length,
         checklistItems: checklistItems.length,
@@ -156,8 +156,7 @@ export const saveSeedDataToFile = async () => {
     
     // Prepare seed data structure (compatible with existing seedDatabase.js)
     const seedData = {
-      version: '1.0',
-      exportedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       data: {
         scholarships,
         checklistItems,
@@ -186,15 +185,18 @@ export const saveSeedDataToFile = async () => {
     console.log(`Seed data prepared for deployment: ${filename}`);
     console.log(`To update GitHub Pages deployment:`);
     console.log(`1. Replace the downloaded file content in src/data/seedData.json`);
-    console.log(`2. Commit and push the changes to your repository`);
-    console.log(`3. GitHub Actions will automatically deploy the updated data`);
+    console.log(`2. The createdAt field (${seedData.createdAt}) will trigger reimport for existing users`);
+    console.log(`3. Commit and push the changes to your repository`);
+    console.log(`4. GitHub Actions will automatically deploy the updated data`);
     
     return {
       success: true,
       filename,
+      createdAt: seedData.createdAt,
       instructions: [
         'Download the seedData.json file',
         'Replace src/data/seedData.json content with the downloaded file',
+        `The createdAt field (${seedData.createdAt}) will trigger reimport for existing users`,
         'Commit and push changes to GitHub repository',
         'GitHub Actions will automatically deploy the updated data'
       ],
