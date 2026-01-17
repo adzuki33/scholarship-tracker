@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "exportedAt": "2026-01-17T04:15:45.779Z",
+  "exportedAt": "2026-01-17T04:39:00.293Z",
   "data": {
     "scholarships": [
       {
@@ -16,114 +16,9 @@
         "updatedAt": "2026-01-17T04:14:51.815Z",
         "createdBy": "system",
         "id": 5
-      },
-      {
-        "name": "MEXT U to U",
-        "provider": "Jepang",
-        "degreeLevel": "Master",
-        "country": "Jepang",
-        "applicationYear": 2026,
-        "deadline": "2025-12-12T00:00:00.000Z",
-        "status": "Not Started",
-        "requiredDocumentIds": [],
-        "createdBy": "user",
-        "createdAt": "2026-01-17T04:15:41.817Z",
-        "updatedAt": "2026-01-17T04:15:41.817Z",
-        "id": 6
       }
     ],
-    "checklistItems": [
-      {
-        "scholarshipId": 6,
-        "text": "Application form",
-        "checked": false,
-        "note": "Complete official MEXT application form",
-        "order": 0,
-        "createdAt": "2026-01-17T04:15:41.827Z",
-        "updatedAt": "2026-01-17T04:15:41.827Z",
-        "id": 11
-      },
-      {
-        "scholarshipId": 6,
-        "text": "Passport copy",
-        "checked": false,
-        "note": "Valid passport photocopy",
-        "order": 1,
-        "createdAt": "2026-01-17T04:15:41.839Z",
-        "updatedAt": "2026-01-17T04:15:41.839Z",
-        "id": 12
-      },
-      {
-        "scholarshipId": 6,
-        "text": "Academic transcript",
-        "checked": false,
-        "note": "Official transcripts from all universities attended",
-        "order": 2,
-        "createdAt": "2026-01-17T04:15:41.853Z",
-        "updatedAt": "2026-01-17T04:15:41.853Z",
-        "id": 13
-      },
-      {
-        "scholarshipId": 6,
-        "text": "Bachelor's degree certificate",
-        "checked": false,
-        "note": "Degree certificate or expected graduation certificate",
-        "order": 3,
-        "createdAt": "2026-01-17T04:15:41.859Z",
-        "updatedAt": "2026-01-17T04:15:41.859Z",
-        "id": 14
-      },
-      {
-        "scholarshipId": 6,
-        "text": "English language certificate (TOEFL/IELTS)",
-        "checked": false,
-        "note": "TOEFL iBT 79+ or IELTS 6.0+ recommended",
-        "order": 4,
-        "createdAt": "2026-01-17T04:15:41.868Z",
-        "updatedAt": "2026-01-17T04:15:41.868Z",
-        "id": 15
-      },
-      {
-        "scholarshipId": 6,
-        "text": "Research proposal (3-4 pages)",
-        "checked": false,
-        "note": "Detailed research plan for graduate studies",
-        "order": 5,
-        "createdAt": "2026-01-17T04:15:41.875Z",
-        "updatedAt": "2026-01-17T04:15:41.875Z",
-        "id": 16
-      },
-      {
-        "scholarshipId": 6,
-        "text": "Health check certificate",
-        "checked": false,
-        "note": "Medical examination certificate using MEXT form",
-        "order": 6,
-        "createdAt": "2026-01-17T04:15:41.879Z",
-        "updatedAt": "2026-01-17T04:15:41.879Z",
-        "id": 17
-      },
-      {
-        "scholarshipId": 6,
-        "text": "Recommendation letter (2)",
-        "checked": false,
-        "note": "Academic recommendation letters from professors",
-        "order": 7,
-        "createdAt": "2026-01-17T04:15:41.892Z",
-        "updatedAt": "2026-01-17T04:15:41.892Z",
-        "id": 18
-      },
-      {
-        "scholarshipId": 6,
-        "text": "Motivation letter",
-        "checked": false,
-        "note": "Statement of purpose explaining study objectives",
-        "order": 8,
-        "createdAt": "2026-01-17T04:15:41.902Z",
-        "updatedAt": "2026-01-17T04:15:41.902Z",
-        "id": 19
-      }
-    ],
+    "checklistItems": [],
     "documents": [],
     "templates": []
   }
