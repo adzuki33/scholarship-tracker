@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
-import { exportAllData, getExportStats } from '../utils/exportData';
+import { exportAllData, exportSeedData, saveSeedDataToFile, getExportStats } from '../utils/exportData';
 import { importData, parseImportFile, getImportPreview, IMPORT_STRATEGIES } from '../utils/importData';
-import ExportButton from './ExportButton';
+import ExportOptions from './ExportOptions';
 import ImportSection from './ImportSection';
 
 const DataManagement = ({ onImportComplete }) => {
-  const [exportStats, setExportStats] = useState({ scholarships: 0, checklistItems: 0, documents: 0, totalItems: 0 });
+  const [exportStats, setExportStats] = useState({ scholarships: 0, checklistItems: 0, documents: 0, templates: 0, totalItems: 0 });
   const [exportLoading, setExportLoading] = useState(false);
+  const [exportType, setExportType] = useState('regular'); // 'regular', 'seed'
   const [importLoading, setImportLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
   const [statusType, setStatusType] = useState('info'); // 'info', 'success', 'error', 'warning'
@@ -24,7 +25,7 @@ const DataManagement = ({ onImportComplete }) => {
     }
   };
 
-  const handleExport = useCallback(async () => {
+  const handleRegularExport = useCallback(async () => {
     try {
       setExportLoading(true);
       setStatusMessage(null);
@@ -32,7 +33,7 @@ const DataManagement = ({ onImportComplete }) => {
       const result = await exportAllData();
       
       setStatusMessage({
-        title: 'Export Successful',
+        title: 'Regular Export Successful',
         message: `Successfully exported ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, and ${result.stats.documents} documents to ${result.filename}`,
         details: result.stats
       });
@@ -42,9 +43,68 @@ const DataManagement = ({ onImportComplete }) => {
       await loadExportStats();
       
     } catch (error) {
-      console.error('Export failed:', error);
+      console.error('Regular export failed:', error);
       setStatusMessage({
         title: 'Export Failed',
+        message: error.message
+      });
+      setStatusType('error');
+    } finally {
+      setExportLoading(false);
+    }
+  }, []);
+
+  const handleSeedExport = useCallback(async () => {
+    try {
+      setExportLoading(true);
+      setStatusMessage(null);
+      
+      const result = await exportSeedData();
+      
+      setStatusMessage({
+        title: 'Seed Data Export Successful',
+        message: `Successfully exported seed data including ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates to ${result.filename}`,
+        details: result.stats
+      });
+      setStatusType('success');
+      
+      // Refresh stats after export
+      await loadExportStats();
+      
+    } catch (error) {
+      console.error('Seed export failed:', error);
+      setStatusMessage({
+        title: 'Seed Export Failed',
+        message: error.message
+      });
+      setStatusType('error');
+    } finally {
+      setExportLoading(false);
+    }
+  }, []);
+
+  const handleSaveSeedData = useCallback(async () => {
+    try {
+      setExportLoading(true);
+      setStatusMessage(null);
+      
+      const result = await saveSeedDataToFile();
+      
+      setStatusMessage({
+        title: 'Seed Data Prepared Successfully',
+        message: `Seed data prepared with ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates.`,
+        details: result.stats,
+        instructions: result.instructions
+      });
+      setStatusType('success');
+      
+      // Refresh stats after export
+      await loadExportStats();
+      
+    } catch (error) {
+      console.error('Save seed data failed:', error);
+      setStatusMessage({
+        title: 'Seed Data Preparation Failed',
         message: error.message
       });
       setStatusType('error');
@@ -79,7 +139,7 @@ const DataManagement = ({ onImportComplete }) => {
       }
       
       // Show preview and confirm
-      const confirmMessage = `This will import:\n• ${preview.stats.scholarships} scholarships\n• ${preview.stats.checklistItems} checklist items\n• ${preview.stats.documents} documents\n\n${strategy === IMPORT_STRATEGIES.REPLACE_ALL ? 'This will replace ALL existing data. This action cannot be undone!' : 'This will merge with existing data.'}\n\nDo you want to continue?`;
+      const confirmMessage = `This will import:\n• ${preview.stats.scholarships} scholarships\n• ${preview.stats.checklistItems} checklist items\n• ${preview.stats.documents} documents\n• ${preview.stats.templates || 0} templates\n\n${strategy === IMPORT_STRATEGIES.REPLACE_ALL ? 'This will replace ALL existing data. This action cannot be undone!' : 'This will merge with existing data.'}\n\nDo you want to continue?`;
       
       if (!window.confirm(confirmMessage)) {
         return;
@@ -191,6 +251,22 @@ const DataManagement = ({ onImportComplete }) => {
                     {statusMessage.details.documents !== undefined && (
                       <div>Documents: {statusMessage.details.documents}</div>
                     )}
+                    {statusMessage.details.templates !== undefined && (
+                      <div>Templates: {statusMessage.details.templates}</div>
+                    )}
+                  </div>
+                )}
+                {statusMessage.instructions && (
+                  <div className={`text-xs mt-2 space-y-1 ${
+                    statusType === 'success' ? 'text-green-600 dark:text-green-400' :
+                    'text-blue-600 dark:text-blue-400'
+                  }`}>
+                    <div className="font-medium">Instructions:</div>
+                    <ol className="list-decimal list-inside space-y-1">
+                      {statusMessage.instructions.map((instruction, index) => (
+                        <li key={index}>{instruction}</li>
+                      ))}
+                    </ol>
                   </div>
                 )}
               </div>
@@ -215,7 +291,7 @@ const DataManagement = ({ onImportComplete }) => {
       {/* Data Summary */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Current Data</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {exportStats.scholarships}
@@ -235,6 +311,12 @@ const DataManagement = ({ onImportComplete }) => {
             <div className="text-sm text-gray-600 dark:text-gray-300">Documents</div>
           </div>
           <div className="text-center">
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+              {exportStats.templates}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Templates</div>
+          </div>
+          <div className="text-center">
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {exportStats.totalItems}
             </div>
@@ -252,12 +334,13 @@ const DataManagement = ({ onImportComplete }) => {
             </svg>
             Export Data
           </h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Create a backup of all your scholarship data including scholarships, checklist items, and documents.
-            The exported file will be a JSON file that you can save to your computer.
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Export your data for backup, sharing, or GitHub Pages deployment. Choose between regular backup or seed data export.
           </p>
-          <ExportButton
-            onExport={handleExport}
+          <ExportOptions
+            onRegularExport={handleRegularExport}
+            onSeedExport={handleSeedExport}
+            onSaveSeedData={handleSaveSeedData}
             loading={exportLoading}
             disabled={exportStats.totalItems === 0}
             stats={exportStats}

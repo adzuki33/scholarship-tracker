@@ -1,144 +1,268 @@
 # GitHub Pages Deployment Setup
 
-This document provides instructions for enabling GitHub Pages deployment for the Scholarship Tracker app.
+## Overview
 
-## What's Been Set Up
+The Scholarship Tracker app is now configured for GitHub Pages deployment with IndexedDB data seeding. All visitors will see the default scholarships by default, and you can easily update the deployed data using the dual export feature.
 
-The following components have been configured for automatic deployment:
+## Features Implemented
 
-1. **Vite Configuration** - `vite.config.js` has been updated with `base: '/scholarship-tracker/'` for proper GitHub Pages routing
-2. **GitHub Actions Workflow** - `.github/workflows/deploy.yml` will automatically deploy on push to main branch
-3. **Seed Data** - `src/data/seedData.json` contains default scholarship data that will load on first visit
-4. **Database Seeding** - `src/utils/seedDatabase.js` automatically seeds the IndexedDB on first load
-5. **Deploy Script** - `npm run deploy` script added for manual deployment
+### ✅ Dual Export System
+- **Regular Data Export**: For personal backup and portability (scholarships, checklist items, documents)
+- **Seed Data Export**: For GitHub Pages deployment (includes all data + built-in templates)
+- **Save Seed Data**: Generates `seedData.json` file for repository update
 
-## Enabling GitHub Pages
+### ✅ Automatic Data Seeding
+- App automatically seeds IndexedDB on first load if database is empty
+- Includes all 11 built-in scholarship templates
+- Won't overwrite existing user data after first deployment
+- Uses localStorage marker to track seeding status
 
-Follow these steps to enable GitHub Pages for your repository:
+### ✅ GitHub Pages Configuration
+- Vite configured with `base: "/scholarship-tracker/"`
+- GitHub Actions workflow for automatic deployment
+- All assets load correctly from subpath
 
-### Step 1: Go to Repository Settings
+### ✅ Complete Data Support
+- Exports include: scholarships, checklistItems, documents, templates
+- Import validates all data types
+- Template system fully integrated
 
-1. Navigate to your repository on GitHub
-2. Click on the **Settings** tab
-3. In the left sidebar, click on **Pages** (under "Code and automation")
+## Repository Setup Instructions
 
-### Step 2: Configure Build and Deployment
+### 1. Enable GitHub Pages
 
-1. Under **Build and deployment**, find the **Source** section
-2. Change the source from "Deploy from a branch" to **"GitHub Actions"**
-3. Click **Save**
+1. Go to your GitHub repository: `https://github.com/YOUR_USERNAME/scholarship-tracker`
+2. Click **Settings** tab
+3. Scroll down to **Pages** section in left sidebar
+4. Under **Source**, select **Deploy from a branch**
+5. Choose **gh-pages** branch and **/ (root)** folder
+6. Click **Save**
 
-Alternatively, if you prefer the branch-based deployment:
+### 2. Repository Structure
 
-1. Set **Source** to "Deploy from a branch"
-2. Set **Branch** to `gh-pages` and folder to `/ (root)`
-3. Click **Save**
-
-### Step 3: Trigger Deployment
-
-Once GitHub Pages is enabled:
-
-- **Automatic**: Push any changes to the `main` branch to trigger automatic deployment via GitHub Actions
-- **Manual**: Run `npm run deploy` locally (requires gh-pages to be installed)
-
-## Deployment Workflow
-
-When you push to the `main` branch:
-
-1. GitHub Actions workflow triggers automatically
-2. Node.js 20 environment is set up
-3. Dependencies are installed with `npm ci`
-4. The app is built with `npm run build`
-5. The `dist/` folder is uploaded as a Pages artifact
-6. The site is deployed to GitHub Pages
-
-Your app will be available at: `https://[your-username].github.io/scholarship-tracker/`
-
-## Seed Data Behavior
-
-The app includes seed data to demonstrate functionality:
-
-- **First Visit**: If IndexedDB is empty, seed data is automatically loaded
-- **Subsequent Visits**: Existing user data is preserved, seed data is NOT reloaded
-- **User Data**: All user-created scholarships, checklists, and documents are stored locally in the browser
-- **Reset**: Users can clear their browser data to reset to seed data
-
-### Seed Data Includes:
-- 2 sample scholarships with deadlines
-- 3 checklist items across scholarships
-- 3 document templates
-- Links between scholarships and required documents
-
-## Manual Deployment (Optional)
-
-If you need to deploy manually from your local machine:
-
-```bash
-# Install gh-pages package (if not already installed)
-npm install --save-dev gh-pages
-
-# Build and deploy
-npm run deploy
+Ensure your repository has this structure:
+```
+scholarship-tracker/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # GitHub Actions workflow
+├── src/
+│   ├── data/
+│   │   └── seedData.json      # Default data for new visitors
+│   ├── db/
+│   ├── components/
+│   └── ...
+├── dist/                      # Built files (auto-generated)
+├── package.json
+├── vite.config.js            # Configured with base path
+└── README.md
 ```
 
-This will:
-1. Build the production version of your app
-2. Create a `gh-pages` branch in your repository
-3. Push the built files to that branch
-4. Deploy to GitHub Pages
+### 3. Automatic Deployment
+
+The GitHub Actions workflow automatically:
+- Triggers on push to `main` branch
+- Installs dependencies
+- Builds the Vite app
+- Deploys to `gh-pages` branch
+- Your site will be available at: `https://YOUR_USERNAME.github.io/scholarship-tracker/`
+
+## How to Update Deployed Data
+
+### Method 1: Using the App's Export Feature (Recommended)
+
+1. **Open the app** (either locally or on GitHub Pages)
+2. **Go to Data Management** tab
+3. **Export Seed Data**:
+   - Click **"Save to seedData.json"** button
+   - Download the generated file
+4. **Update Repository**:
+   - Replace the content of `src/data/seedData.json` with the downloaded file
+   - Commit and push changes to GitHub
+5. **Automatic Deployment**:
+   - GitHub Actions will automatically build and deploy the updated data
+   - New visitors will see the updated scholarships
+
+### Method 2: Manual Update
+
+1. Edit `src/data/seedData.json` directly in your repository
+2. Add/modify scholarships, documents, checklist items, or templates
+3. Commit and push changes
+4. GitHub Actions will redeploy automatically
+
+## Data Structure
+
+### Seed Data Format
+
+The `seedData.json` file contains:
+
+```json
+{
+  "version": "1.0",
+  "exportedAt": "2025-01-17T00:00:00Z",
+  "description": "Default seed data for Scholarship Tracker app",
+  "data": {
+    "scholarships": [...],
+    "checklistItems": [...],
+    "documents": [...],
+    "templates": [...]
+  }
+}
+```
+
+### Built-in Templates Included
+
+1. **LPDP Indonesia** - Indonesian Education Fund
+2. **MEXT Japan** - Japanese Government Scholarship
+3. **Chevening UK** - UK Government Scholarship
+4. **Erasmus+ Europe** - EU Exchange Program
+5. **Fulbright USA** - US Government Scholarship
+6. **DAAD Germany** - German Academic Exchange
+7. **Australia Awards** - Australian Government
+8. **Commonwealth Scholarships** - Commonwealth Countries
+9. **Swedish Institute** - Swedish Government
+10. **General Master's Scholarship** - Generic Template
+11. **General PhD Scholarship** - Generic Template
+
+## Export Options Comparison
+
+| Feature | Regular Export | Seed Data Export | Save Seed Data |
+|---------|---------------|------------------|----------------|
+| **Purpose** | Personal backup | GitHub Pages deployment | Repository update |
+| **Includes** | Scholarships, checklist, documents | All data + templates | All data + templates |
+| **File Name** | `scholarship-tracker-backup-YYYY-MM-DD.json` | `seedData-YYYY-MM-DD.json` | `seedData.json` |
+| **Templates** | ❌ | ✅ | ✅ |
+| **Use Case** | Backup/transfer | Download for GitHub Pages | Direct repository update |
+
+## Technical Details
+
+### Vite Configuration
+
+```javascript
+// vite.config.js
+export default defineConfig({
+  base: '/scholarship-tracker/',
+  plugins: [react(), tailwindcss()],
+})
+```
+
+### GitHub Actions Workflow
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v4
+```
+
+### Database Seeding Logic
+
+```javascript
+// src/utils/seedDatabase.js
+export const seedDatabase = async () => {
+  // Check if already seeded
+  if (isDatabaseSeeded()) return;
+  
+  // Check if existing data
+  const existing = await getAllScholarships();
+  if (existing.length > 0) {
+    markDatabaseSeeded();
+    return;
+  }
+  
+  // Import seed data
+  // ...
+}
+```
 
 ## Troubleshooting
 
-### Site Not Loading After Deployment
+### Site Not Loading
+- Check GitHub Pages settings point to `gh-pages` branch
+- Verify repository name matches `scholarship-tracker`
+- Wait 2-3 minutes for deployment to complete
 
-1. Wait a few minutes for GitHub Pages to complete deployment
-2. Check the GitHub Actions tab for any build errors
-3. Ensure your repository name is exactly `scholarship-tracker` (or update the base path in vite.config.js)
+### Assets Not Loading (404s)
+- Ensure `base` in `vite.config.js` matches repository name
+- Check GitHub Pages source is set to `gh-pages` branch
 
-### Assets Not Loading
+### Data Not Seeding
+- Clear browser storage and reload
+- Check browser console for errors
+- Verify `seedData.json` exists and is valid JSON
 
-If CSS, JS, or images fail to load:
+### Build Failures
+- Check Node.js version compatibility
+- Ensure all dependencies are properly installed
+- Review GitHub Actions logs for specific errors
 
-1. Verify the `base` path in `vite.config.js` matches your repository name
-2. Clear your browser cache
-3. Check the browser console for 404 errors
+## Advanced Usage
 
-### Seed Data Not Appearing
+### Custom Templates in Seed Data
 
-If seed data doesn't load on first visit:
+You can add custom templates to the seed data:
 
-1. Open browser DevTools (F12)
-2. Go to Console tab
-3. Look for "Database already seeded" or "Seeding database" messages
-4. Clear browser LocalStorage and IndexedDB to force re-seeding
+```json
+{
+  "templates": [
+    {
+      "id": "custom-scholarship",
+      "name": "Custom University Scholarship",
+      "description": "Template for custom university scholarships",
+      "category": "Custom",
+      "country": "University",
+      "createdBy": "user",
+      "version": "1.0",
+      "items": [
+        { "text": "University application", "note": "Complete university form" },
+        { "text": "Financial aid form", "note": "FAFSA or equivalent" }
+      ]
+    }
+  ]
+}
+```
 
-## Updating Seed Data
+### Large Dataset Considerations
 
-To modify the seed data:
+For datasets with many items:
+- Consider breaking into multiple exports
+- Monitor browser memory usage
+- Test on mobile devices
+- Use pagination for large lists
 
-1. Edit `src/data/seedData.json` with your desired scholarships, checklists, and documents
-2. Update the version number in the JSON
-3. Deploy your changes
-4. For existing deployments, users can clear their data to see new seed data
+## Support
 
-## Customizing the Base Path
+If you encounter issues:
 
-If your repository name is different from `scholarship-tracker`:
+1. Check the browser console for errors
+2. Verify GitHub Actions workflow completed successfully
+3. Ensure repository structure matches the expected layout
+4. Test locally before pushing to repository
 
-1. Update `vite.config.js`:
-   ```js
-   export default defineConfig({
-     base: '/your-repo-name/', // Change this
-     // ...
-   })
-   ```
+## Future Enhancements
 
-2. Update this documentation accordingly
-
-## Security Notes
-
-- The app runs entirely in the browser with client-side storage
-- No server-side processing or databases are required
-- User data is stored locally in IndexedDB and is not transmitted
-- The app is suitable for personal use or demonstration purposes
-- For production use with real user data, consider adding authentication and server-side storage
+Potential improvements:
+- Admin interface for GitHub Pages data updates
+- Automated data sync from external sources
+- Multi-language template support
+- Advanced filtering and search for seed data
+- Data validation and cleanup tools
