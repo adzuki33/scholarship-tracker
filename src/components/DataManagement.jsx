@@ -93,7 +93,10 @@ const DataManagement = ({ onImportComplete }) => {
       setStatusMessage({
         title: 'Seed Data Prepared Successfully',
         message: `Seed data prepared with ${result.stats.scholarships} scholarships, ${result.stats.checklistItems} checklist items, ${result.stats.documents} documents, and ${result.stats.templates} templates.`,
-        details: result.stats,
+        details: {
+          ...result.stats,
+          createdAt: result.createdAt
+        },
         instructions: result.instructions
       });
       setStatusType('success');
@@ -242,6 +245,9 @@ const DataManagement = ({ onImportComplete }) => {
                     statusType === 'warning' ? 'text-yellow-600 dark:text-yellow-400' :
                     'text-blue-600 dark:text-blue-400'
                   }`}>
+                    {statusMessage.details.createdAt && (
+                      <div className="mb-1">Created At: {statusMessage.details.createdAt}</div>
+                    )}
                     {statusMessage.details.scholarships !== undefined && (
                       <div>Scholarships: {statusMessage.details.scholarships}</div>
                     )}

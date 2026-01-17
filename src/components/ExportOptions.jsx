@@ -6,6 +6,7 @@ const ExportOptions = ({ onRegularExport, onSeedExport, onSaveSeedData, loading,
   useEffect(() => {
     // Calculate estimated file size for seed data (includes templates)
     const estimatedSize = JSON.stringify({
+      createdAt: new Date().toISOString(),
       version: '1.0',
       exportedAt: new Date().toISOString(),
       data: {
@@ -213,6 +214,7 @@ const ExportOptions = ({ onRegularExport, onSeedExport, onSaveSeedData, loading,
           <h5 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">How to update GitHub Pages data:</h5>
           <ol className="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-decimal list-inside">
             <li>Click "Save to seedData.json" and download the file</li>
+            <li>The export includes a <code className="bg-blue-200 dark:bg-blue-700 px-1 rounded">createdAt</code> timestamp that will trigger reimport for returning users</li>
             <li>Replace the content of <code className="bg-blue-200 dark:bg-blue-700 px-1 rounded">src/data/seedData.json</code> in your repository</li>
             <li>Commit and push the changes to GitHub</li>
             <li>GitHub Actions will automatically deploy the updated data</li>

@@ -20,6 +20,7 @@ export const exportAllData = async () => {
     
     // Prepare export data structure (regular format)
     const exportData = {
+      createdAt: new Date().toISOString(),
       version: '1.0',
       exportedAt: new Date().toISOString(),
       data: {
@@ -87,6 +88,7 @@ export const exportSeedData = async () => {
     
     // Prepare export data structure (seed format - includes templates)
     const exportData = {
+      createdAt: new Date().toISOString(),
       version: '1.0',
       exportedAt: new Date().toISOString(),
       data: {
@@ -156,6 +158,7 @@ export const saveSeedDataToFile = async () => {
     
     // Prepare seed data structure (compatible with existing seedDatabase.js)
     const seedData = {
+      createdAt: new Date().toISOString(),
       version: '1.0',
       exportedAt: new Date().toISOString(),
       data: {
@@ -184,6 +187,7 @@ export const saveSeedDataToFile = async () => {
     URL.revokeObjectURL(url);
     
     console.log(`Seed data prepared for deployment: ${filename}`);
+    console.log(`Note: The export includes a createdAt timestamp that will trigger reimport for returning users.`);
     console.log(`To update GitHub Pages deployment:`);
     console.log(`1. Replace the downloaded file content in src/data/seedData.json`);
     console.log(`2. Commit and push the changes to your repository`);
@@ -192,9 +196,11 @@ export const saveSeedDataToFile = async () => {
     return {
       success: true,
       filename,
+      createdAt: seedData.createdAt,
       instructions: [
         'Download the seedData.json file',
         'Replace src/data/seedData.json content with the downloaded file',
+        'The exported file includes a createdAt timestamp that will trigger reimport',
         'Commit and push changes to GitHub repository',
         'GitHub Actions will automatically deploy the updated data'
       ],
