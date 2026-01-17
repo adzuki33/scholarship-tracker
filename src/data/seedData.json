@@ -1,6 +1,6 @@
 {
-  "createdAt": "2026-01-17T12:00:00.000Z",
   "version": "1.0",
+  "exportedAt": "2026-01-17T13:43:04.448Z",
   "data": {
     "scholarships": [
       {
@@ -26,10 +26,24 @@
         "deadline": "2026-04-04T00:00:00.000Z",
         "status": "Not Started",
         "requiredDocumentIds": [],
+        "createdBy": "system",
+        "createdAt": "2026-01-17T13:41:23.428Z",
+        "updatedAt": "2026-01-17T13:41:23.428Z",
+        "id": 13
+      },
+      {
+        "name": "Tes 3",
+        "provider": "Jepang",
+        "degreeLevel": "Master",
+        "country": "Jepang",
+        "applicationYear": 2026,
+        "deadline": "2026-03-31T00:00:00.000Z",
+        "status": "Not Started",
+        "requiredDocumentIds": [],
         "createdBy": "user",
-        "createdAt": "2026-01-17T05:04:31.828Z",
-        "updatedAt": "2026-01-17T05:04:31.828Z",
-        "id": 9
+        "createdAt": "2026-01-17T13:42:58.931Z",
+        "updatedAt": "2026-01-17T13:42:58.931Z",
+        "id": 14
       }
     ],
     "checklistItems": [
