@@ -102,29 +102,44 @@ const importSeedScholarships = async (scholarships, checklistItems) => {
   console.log(`Importing ${scholarships.length} seed scholarships...`);
   
   for (const scholarship of scholarships) {
-    const { id, ...scholarshipData } = scholarship;
-    
-    // Add createdBy marker to identify this as system data
-    const created = await createScholarship({
-      ...scholarshipData,
-      createdBy: 'system'
-    });
-    
-    scholarshipIdMap.set(id, created.id);
-    console.log('Created seed scholarship:', scholarship.name);
-  }
-  
-  // Import checklist items for seed scholarships
-  for (const item of checklistItems) {
-    const { id, scholarshipId, ...itemData } = item;
-    const newScholarshipId = scholarshipIdMap.get(scholarshipId);
-    
-    if (newScholarshipId) {
-      await createChecklistItem(newScholarshipId, itemData);
-      console.log('Created checklist item:', item.text);
+    try {
+      const { id, ...scholarshipData } = scholarship;
+      
+      // Add createdBy marker to identify this as system data
+      const created = await createScholarship({
+        ...scholarshipData,
+        createdBy: 'system'
+      });
+      
+      scholarshipIdMap.set(id, created.id);
+      console.log('Created seed scholarship:', scholarship.name);
+    } catch (error) {
+      console.error('Error importing scholarship:', scholarship.name, error);
+      throw error;
     }
   }
   
+  console.log(`Importing ${checklistItems.length} seed checklist items...`);
+  
+  // Import checklist items for seed scholarships
+  for (const item of checklistItems) {
+    try {
+      const { id, scholarshipId, ...itemData } = item;
+      const newScholarshipId = scholarshipIdMap.get(scholarshipId);
+      
+      if (newScholarshipId) {
+        await createChecklistItem(newScholarshipId, itemData);
+        console.log('Created checklist item:', item.text);
+      } else {
+        console.warn('Skipping checklist item for unknown scholarship:', scholarshipId);
+      }
+    } catch (error) {
+      console.error('Error importing checklist item:', item.text, error);
+      throw error;
+    }
+  }
+  
+  console.log('Seed scholarship import completed successfully');
   return scholarshipIdMap;
 };
 
@@ -171,14 +186,34 @@ const importSeedTemplates = async (templates) => {
 export const seedDatabase = async () => {
   try {
     console.log('Checking seed data version...');
+    console.log('Seed data loaded:', {
+      version: seedData?.version,
+      hasData: !!seedData?.data,
+      scholarshipCount: seedData?.data?.scholarships?.length || 0,
+      checklistItemCount: seedData?.data?.checklistItems?.length || 0
+    });
     
-    if (!needsSeedUpdate()) {
-      console.log('Seed data is up to date. No import needed.');
-      return;
+    // Validate seed data structure
+    if (!seedData || !seedData.data || !seedData.data.scholarships) {
+      console.error('Invalid seed data structure!', seedData);
+      throw new Error('Seed data is invalid or missing');
     }
     
     const allScholarships = await getAllScholarships();
     const isFirstTime = allScholarships.length === 0;
+    const needsUpdate = needsSeedUpdate();
+    
+    console.log('Seed check results:', {
+      isFirstTime,
+      needsUpdate,
+      scholarshipCount: allScholarships.length
+    });
+    
+    // Only skip import if we don't need an update AND we already have data
+    if (!needsUpdate && !isFirstTime) {
+      console.log('Seed data is up to date. No import needed.');
+      return;
+    }
     
     if (isFirstTime) {
       console.log('First time visit - importing all seed data...');
@@ -190,20 +225,43 @@ export const seedDatabase = async () => {
     
     const { scholarships, checklistItems, documents, templates } = seedData.data;
     
+    console.log('Starting seed data import:', {
+      scholarships: scholarships.length,
+      checklistItems: checklistItems.length,
+      documents: documents?.length || 0,
+      templates: templates?.length || 0
+    });
+    
     // Import seed data with system markers
     await importSeedScholarships(scholarships, checklistItems);
     
     // Only import documents and templates on first visit
     // (these aren't version-controlled to avoid overwriting user data)
     if (isFirstTime) {
-      await importSeedDocuments(documents);
-      await importSeedTemplates(templates);
+      if (documents && documents.length > 0) {
+        await importSeedDocuments(documents);
+      } else {
+        console.log('No seed documents to import');
+      }
+      
+      if (templates && templates.length > 0) {
+        await importSeedTemplates(templates);
+      } else {
+        console.log('No seed templates to import');
+      }
     }
     
     // Update the stored version
     setSeedVersion(seedData.version);
     
+    // Verify import by checking the database
+    const finalScholarships = await getAllScholarships();
     console.log(`Seed data ${isFirstTime ? 'imported' : 'updated'} successfully to version ${seedData.version}!`);
+    console.log('Final database state:', {
+      totalScholarships: finalScholarships.length,
+      systemScholarships: finalScholarships.filter(s => s.createdBy === 'system').length,
+      userScholarships: finalScholarships.filter(s => s.createdBy === 'user').length
+    });
     
   } catch (error) {
     console.error('Error seeding database:', error);
