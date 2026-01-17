@@ -1,24 +1,129 @@
 {
   "version": "1.0",
-  "exportedAt": "2026-01-17T04:39:00.293Z",
+  "exportedAt": "2026-01-17T05:04:34.192Z",
   "data": {
     "scholarships": [
       {
-        "name": "LPDP Reguler",
-        "provider": "Kementerian Keuangan Republik Indonesia",
+        "name": "MEXT U to U",
+        "provider": "Jepang",
         "degreeLevel": "Master",
         "country": "Jepang",
         "applicationYear": 2026,
-        "deadline": "2026-03-01T00:00:00.000Z",
-        "status": "Preparing",
+        "deadline": "2026-12-12T00:00:00.000Z",
+        "status": "Not Started",
         "requiredDocumentIds": [],
-        "createdAt": "2026-01-17T04:14:51.815Z",
-        "updatedAt": "2026-01-17T04:14:51.815Z",
-        "createdBy": "system",
-        "id": 5
+        "createdBy": "user",
+        "createdAt": "2026-01-17T04:42:47.644Z",
+        "updatedAt": "2026-01-17T04:42:47.644Z",
+        "id": 7
+      },
+      {
+        "name": "Chevening",
+        "provider": "Inggris",
+        "degreeLevel": "Master",
+        "country": "Inggris",
+        "applicationYear": 2026,
+        "deadline": "2026-04-04T00:00:00.000Z",
+        "status": "Not Started",
+        "requiredDocumentIds": [],
+        "createdBy": "user",
+        "createdAt": "2026-01-17T05:04:31.828Z",
+        "updatedAt": "2026-01-17T05:04:31.828Z",
+        "id": 9
       }
     ],
-    "checklistItems": [],
+    "checklistItems": [
+      {
+        "scholarshipId": 7,
+        "text": "Application form",
+        "checked": false,
+        "note": "Complete official MEXT application form",
+        "order": 0,
+        "createdAt": "2026-01-17T04:42:47.649Z",
+        "updatedAt": "2026-01-17T04:42:47.649Z",
+        "id": 26
+      },
+      {
+        "scholarshipId": 7,
+        "text": "Passport copy",
+        "checked": false,
+        "note": "Valid passport photocopy",
+        "order": 1,
+        "createdAt": "2026-01-17T04:42:47.651Z",
+        "updatedAt": "2026-01-17T04:42:47.651Z",
+        "id": 27
+      },
+      {
+        "scholarshipId": 7,
+        "text": "Academic transcript",
+        "checked": false,
+        "note": "Official transcripts from all universities attended",
+        "order": 2,
+        "createdAt": "2026-01-17T04:42:47.652Z",
+        "updatedAt": "2026-01-17T04:42:47.652Z",
+        "id": 28
+      },
+      {
+        "scholarshipId": 7,
+        "text": "Bachelor's degree certificate",
+        "checked": false,
+        "note": "Degree certificate or expected graduation certificate",
+        "order": 3,
+        "createdAt": "2026-01-17T04:42:47.654Z",
+        "updatedAt": "2026-01-17T04:42:47.654Z",
+        "id": 29
+      },
+      {
+        "scholarshipId": 7,
+        "text": "English language certificate (TOEFL/IELTS)",
+        "checked": false,
+        "note": "TOEFL iBT 79+ or IELTS 6.0+ recommended",
+        "order": 4,
+        "createdAt": "2026-01-17T04:42:47.656Z",
+        "updatedAt": "2026-01-17T04:42:47.656Z",
+        "id": 30
+      },
+      {
+        "scholarshipId": 7,
+        "text": "Research proposal (3-4 pages)",
+        "checked": false,
+        "note": "Detailed research plan for graduate studies",
+        "order": 5,
+        "createdAt": "2026-01-17T04:42:47.657Z",
+        "updatedAt": "2026-01-17T04:42:47.657Z",
+        "id": 31
+      },
+      {
+        "scholarshipId": 7,
+        "text": "Health check certificate",
+        "checked": false,
+        "note": "Medical examination certificate using MEXT form",
+        "order": 6,
+        "createdAt": "2026-01-17T04:42:47.659Z",
+        "updatedAt": "2026-01-17T04:42:47.659Z",
+        "id": 32
+      },
+      {
+        "scholarshipId": 7,
+        "text": "Recommendation letter (2)",
+        "checked": false,
+        "note": "Academic recommendation letters from professors",
+        "order": 7,
+        "createdAt": "2026-01-17T04:42:47.660Z",
+        "updatedAt": "2026-01-17T04:42:47.660Z",
+        "id": 33
+      },
+      {
+        "scholarshipId": 7,
+        "text": "Motivation letter",
+        "checked": false,
+        "note": "Statement of purpose explaining study objectives",
+        "order": 8,
+        "createdAt": "2026-01-17T04:42:47.662Z",
+        "updatedAt": "2026-01-17T04:42:47.662Z",
+        "id": 34
+      }
+    ],
     "documents": [],
     "templates": []
   }
