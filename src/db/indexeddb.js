@@ -83,6 +83,7 @@ export const createScholarship = (data) => {
       const scholarship = {
         ...data,
         requiredDocumentIds: normalizeRequiredDocumentIds(data?.requiredDocumentIds),
+        createdBy: data?.createdBy || 'user', // Default to 'user' if not specified, 'system' for seed data
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
