@@ -111,3 +111,5 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+
+pnpm-lock.yaml
