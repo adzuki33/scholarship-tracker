@@ -2,7 +2,8 @@ import {
   clearAllData, 
   createScholarship, 
   createChecklistItem, 
-  createDocument 
+  createDocument,
+  createTemplate
 } from '../db/indexeddb';
 
 // Import strategy constants
@@ -30,11 +31,11 @@ export const validateImportData = (jsonData) => {
   
   // Check for data field
   if (!jsonData.data || typeof jsonData.data !== 'object') {
-    errors.push('Missing or invalid data field - expected object with scholarships, checklistItems, and documents');
+    errors.push('Missing or invalid data field - expected object with scholarships, checklistItems, documents, and optionally templates');
     return { valid: false, errors, warnings };
   }
   
-  const { scholarships = [], checklistItems = [], documents = [] } = jsonData.data;
+  const { scholarships = [], checklistItems = [], documents = [], templates = [] } = jsonData.data;
   
   // Validate scholarships array
   if (!Array.isArray(scholarships)) {
@@ -121,6 +122,42 @@ export const validateImportData = (jsonData) => {
     });
   }
   
+  // Validate templates array (optional)
+  if (templates && !Array.isArray(templates)) {
+    errors.push('Templates field must be an array');
+  } else if (templates && templates.length > 0) {
+    templates.forEach((template, index) => {
+      if (!template || typeof template !== 'object') {
+        errors.push(`Template at index ${index} must be an object`);
+        return;
+      }
+      
+      // Check required fields
+      const requiredFields = ['name'];
+      requiredFields.forEach(field => {
+        if (!template[field]) {
+          errors.push(`Template "${template.name || 'Unknown'}" is missing required field: ${field}`);
+        }
+      });
+      
+      // Validate createdBy if present
+      if (template.createdBy && !['user', 'system'].includes(template.createdBy)) {
+        warnings.push(`Template "${template.name || 'Unknown'}" has invalid createdBy "${template.createdBy}", defaulting to 'user'`);
+      }
+      
+      // Validate items if present
+      if (template.items && !Array.isArray(template.items)) {
+        warnings.push(`Template "${template.name || 'Unknown'}" has invalid items type, defaulting to empty array`);
+      } else if (template.items) {
+        template.items.forEach((item, itemIndex) => {
+          if (!item.text) {
+            warnings.push(`Template "${template.name || 'Unknown'}" has item at index ${itemIndex} missing text field`);
+          }
+        });
+      }
+    });
+  }
+  
   return {
     valid: errors.length === 0,
     errors,
@@ -142,7 +179,7 @@ export const importData = async (jsonData, strategy = IMPORT_STRATEGIES.REPLACE_
     }
     
     const { data } = validation;
-    const { scholarships = [], checklistItems = [], documents = [] } = data;
+    const { scholarships = [], checklistItems = [], documents = [], templates = [] } = data;
     
     // Clear existing data if using REPLACE_ALL strategy
     if (strategy === IMPORT_STRATEGIES.REPLACE_ALL) {
@@ -158,7 +195,8 @@ export const importData = async (jsonData, strategy = IMPORT_STRATEGIES.REPLACE_
     const results = {
       scholarships: { created: 0, errors: [] },
       checklistItems: { created: 0, errors: [] },
-      documents: { created: 0, errors: [] }
+      documents: { created: 0, errors: [] },
+      templates: { created: 0, errors: [] }
     };
     
     // Import scholarships first
@@ -199,6 +237,31 @@ export const importData = async (jsonData, strategy = IMPORT_STRATEGIES.REPLACE_
       } catch (error) {
         console.error('Error importing document:', document.name, error);
         results.documents.errors.push(`${document.name}: ${error.message}`);
+      }
+    }
+    
+    // Import templates next (before checklist items to ensure they're available)
+    console.log(`Importing ${templates.length} templates...`);
+    for (const template of templates) {
+      try {
+        // Remove id field to let IndexedDB auto-increment
+        const { id, ...templateData } = template;
+        
+        // Normalize createdBy
+        if (templateData.createdBy && !['user', 'system'].includes(templateData.createdBy)) {
+          templateData.createdBy = 'user';
+        }
+        
+        // Normalize items
+        if (templateData.items && !Array.isArray(templateData.items)) {
+          templateData.items = [];
+        }
+        
+        await createTemplate(templateData);
+        results.templates.created++;
+      } catch (error) {
+        console.error('Error importing template:', template.name, error);
+        results.templates.errors.push(`${template.name}: ${error.message}`);
       }
     }
     
@@ -270,7 +333,7 @@ export const getImportPreview = (jsonData) => {
       };
     }
     
-    const { scholarships = [], checklistItems = [], documents = [] } = validation.data;
+    const { scholarships = [], checklistItems = [], documents = [], templates = [] } = validation.data;
     
     return {
       valid: true,
@@ -279,7 +342,8 @@ export const getImportPreview = (jsonData) => {
         scholarships: scholarships.length,
         checklistItems: checklistItems.length,
         documents: documents.length,
-        totalItems: scholarships.length + checklistItems.length + documents.length
+        templates: templates.length,
+        totalItems: scholarships.length + checklistItems.length + documents.length + templates.length
       }
     };
   } catch (error) {
