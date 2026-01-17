@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import ChecklistItem from './ChecklistItem';
 import DocumentRequirements from './DocumentRequirements';
 
@@ -16,6 +16,7 @@ const ChecklistView = ({
   const [newItemText, setNewItemText] = useState('');
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
+  const isSubmittingRef = useRef(false);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -27,16 +28,21 @@ const ChecklistView = ({
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   const handleAddItem = async () => {
-    if (newItemText.trim()) {
-      const maxOrder = Math.max(-1, ...checklistItems.map(item => item.order));
-      await onCreateItem({
-        text: newItemText.trim(),
-        checked: false,
-        note: '',
-        order: maxOrder + 1
-      });
-      setNewItemText('');
-      setIsAddingItem(false);
+    if (newItemText.trim() && !isSubmittingRef.current) {
+      isSubmittingRef.current = true;
+      try {
+        const maxOrder = Math.max(-1, ...checklistItems.map(item => item.order));
+        await onCreateItem({
+          text: newItemText.trim(),
+          checked: false,
+          note: '',
+          order: maxOrder + 1
+        });
+        setNewItemText('');
+        setIsAddingItem(false);
+      } finally {
+        isSubmittingRef.current = false;
+      }
     }
   };
 

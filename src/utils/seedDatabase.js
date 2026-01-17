@@ -38,14 +38,28 @@ const SEED_VERSION_KEY = 'scholarship-tracker-seed-version';
  * Get the currently installed seed data version
  */
 export const getCurrentSeedVersion = () => {
-  return localStorage.getItem(SEED_VERSION_KEY);
+  try {
+    const version = localStorage.getItem(SEED_VERSION_KEY);
+    console.log('Retrieved current seed version from localStorage:', version);
+    return version;
+  } catch (error) {
+    console.error('Error reading seed version from localStorage:', error);
+    return null;
+  }
 };
 
 /**
  * Save the current seed data version
  */
 export const setSeedVersion = (version) => {
-  localStorage.setItem(SEED_VERSION_KEY, version);
+  try {
+    console.log('Storing seed version to localStorage:', version);
+    localStorage.setItem(SEED_VERSION_KEY, version);
+    console.log('Seed version stored successfully');
+  } catch (error) {
+    console.error('Error storing seed version to localStorage:', error);
+    throw error;
+  }
 };
 
 /**
@@ -53,20 +67,34 @@ export const setSeedVersion = (version) => {
  */
 export const needsSeedUpdate = () => {
   const currentVersion = getCurrentSeedVersion();
-  const newVersion = seedData.version;
-  
-  console.log('Seed version check:', { currentVersion, newVersion });
-  
-  // First time visit - no version set
+  const newVersion = seedData?.version;
+
+  console.log('Seed version comparison:', {
+    currentVersion,
+    newVersion,
+    versionMatch: currentVersion === newVersion,
+    isFirstVisit: !currentVersion
+  });
+
+  // First time visit - no version set (including case where localStorage is inaccessible)
   if (!currentVersion) {
+    console.log('-> Update needed: First visit or localStorage unavailable');
     return true;
   }
-  
+
+  // Missing version in seed data - treat as needing update to be safe
+  if (!newVersion) {
+    console.log('-> Update needed: Seed data missing version field');
+    return true;
+  }
+
   // Version mismatch - need update
   if (currentVersion !== newVersion) {
+    console.log(`-> Update needed: Version changed from "${currentVersion}" to "${newVersion}"`);
     return true;
   }
-  
+
+  console.log('-> No update needed: Versions match');
   return false;
 };
 
@@ -98,47 +126,51 @@ const deleteSystemScholarships = async () => {
  */
 const importSeedScholarships = async (scholarships, checklistItems) => {
   const scholarshipIdMap = new Map();
-  
+
   console.log(`Importing ${scholarships.length} seed scholarships...`);
-  
+
   for (const scholarship of scholarships) {
     try {
       const { id, ...scholarshipData } = scholarship;
-      
+
       // Add createdBy marker to identify this as system data
       const created = await createScholarship({
         ...scholarshipData,
         createdBy: 'system'
       });
-      
+
       scholarshipIdMap.set(id, created.id);
-      console.log('Created seed scholarship:', scholarship.name);
+      console.log(`-> Created seed scholarship "${scholarship.name}" with ID ${created.id}`);
     } catch (error) {
-      console.error('Error importing scholarship:', scholarship.name, error);
-      throw error;
+      console.error(`-> FAILED to import scholarship "${scholarship.name}":`, error);
+      throw new Error(`Failed to import scholarship "${scholarship.name}": ${error.message}`);
     }
   }
-  
-  console.log(`Importing ${checklistItems.length} seed checklist items...`);
-  
+
+  console.log(`Importing ${checklistItems?.length || 0} seed checklist items...`);
+
   // Import checklist items for seed scholarships
-  for (const item of checklistItems) {
-    try {
-      const { id, scholarshipId, ...itemData } = item;
-      const newScholarshipId = scholarshipIdMap.get(scholarshipId);
-      
-      if (newScholarshipId) {
-        await createChecklistItem(newScholarshipId, itemData);
-        console.log('Created checklist item:', item.text);
-      } else {
-        console.warn('Skipping checklist item for unknown scholarship:', scholarshipId);
+  if (checklistItems && checklistItems.length > 0) {
+    for (const item of checklistItems) {
+      try {
+        const { id, scholarshipId, ...itemData } = item;
+        const newScholarshipId = scholarshipIdMap.get(scholarshipId);
+
+        if (newScholarshipId) {
+          await createChecklistItem(newScholarshipId, itemData);
+          console.log(`-> Created checklist item "${item.text}" for scholarship ID ${newScholarshipId}`);
+        } else {
+          console.warn(`-> Skipping checklist item "${item.text}" for unknown scholarship ID ${scholarshipId}`);
+        }
+      } catch (error) {
+        console.error(`-> FAILED to import checklist item "${item.text}":`, error);
+        throw new Error(`Failed to import checklist item "${item.text}": ${error.message}`);
       }
-    } catch (error) {
-      console.error('Error importing checklist item:', item.text, error);
-      throw error;
     }
+  } else {
+    console.log('-> No checklist items to import');
   }
-  
+
   console.log('Seed scholarship import completed successfully');
   return scholarshipIdMap;
 };
@@ -185,7 +217,7 @@ const importSeedTemplates = async (templates) => {
  */
 export const seedDatabase = async () => {
   try {
-    console.log('Checking seed data version...');
+    console.log('=== SEED DATABASE: Starting version check ===');
     console.log('Seed data loaded:', {
       version: seedData?.version,
       hasData: !!seedData?.data,
@@ -194,9 +226,19 @@ export const seedDatabase = async () => {
     });
     
     // Validate seed data structure
-    if (!seedData || !seedData.data || !seedData.data.scholarships) {
-      console.error('Invalid seed data structure!', seedData);
+    if (!seedData) {
+      console.error('Invalid seed data: seedData is null/undefined');
       throw new Error('Seed data is invalid or missing');
+    }
+    
+    if (!seedData.version) {
+      console.error('Invalid seed data: version field is missing');
+      throw new Error('Seed data version is missing');
+    }
+    
+    if (!seedData.data || !Array.isArray(seedData.data.scholarships)) {
+      console.error('Invalid seed data: scholarships array is missing', seedData.data);
+      throw new Error('Seed data scholarships array is missing or invalid');
     }
     
     const allScholarships = await getAllScholarships();
@@ -206,19 +248,21 @@ export const seedDatabase = async () => {
     console.log('Seed check results:', {
       isFirstTime,
       needsUpdate,
-      scholarshipCount: allScholarships.length
+      scholarshipCount: allScholarships.length,
+      currentVersion: getCurrentSeedVersion(),
+      newVersion: seedData.version
     });
     
     // Only skip import if we don't need an update AND we already have data
     if (!needsUpdate && !isFirstTime) {
-      console.log('Seed data is up to date. No import needed.');
+      console.log('=== SEED DATABASE: Version is up to date, skipping import ===');
       return;
     }
     
     if (isFirstTime) {
-      console.log('First time visit - importing all seed data...');
+      console.log('=== SEED DATABASE: First time visit - importing all seed data ===');
     } else {
-      console.log('Seed version changed - updating seed data...');
+      console.log('=== SEED DATABASE: Version changed - updating seed data ===');
       // Delete old system scholarships before importing new ones
       await deleteSystemScholarships();
     }
@@ -227,13 +271,13 @@ export const seedDatabase = async () => {
     
     console.log('Starting seed data import:', {
       scholarships: scholarships.length,
-      checklistItems: checklistItems.length,
+      checklistItems: checklistItems?.length || 0,
       documents: documents?.length || 0,
       templates: templates?.length || 0
     });
     
     // Import seed data with system markers
-    await importSeedScholarships(scholarships, checklistItems);
+    await importSeedScholarships(scholarships, checklistItems || []);
     
     // Only import documents and templates on first visit
     // (these aren't version-controlled to avoid overwriting user data)
@@ -251,20 +295,26 @@ export const seedDatabase = async () => {
       }
     }
     
-    // Update the stored version
+    // Only update the stored version AFTER successful import
+    console.log(`=== SEED DATABASE: Import successful, updating version to ${seedData.version} ===`);
     setSeedVersion(seedData.version);
     
     // Verify import by checking the database
     const finalScholarships = await getAllScholarships();
-    console.log(`Seed data ${isFirstTime ? 'imported' : 'updated'} successfully to version ${seedData.version}!`);
+    console.log(`=== SEED DATABASE: ${isFirstTime ? 'Import' : 'Update'} completed successfully ===`);
     console.log('Final database state:', {
       totalScholarships: finalScholarships.length,
       systemScholarships: finalScholarships.filter(s => s.createdBy === 'system').length,
       userScholarships: finalScholarships.filter(s => s.createdBy === 'user').length
     });
     
+    console.log('=== SEED DATABASE: Process complete ===');
+    
   } catch (error) {
+    console.error('=== SEED DATABASE: ERROR ===');
     console.error('Error seeding database:', error);
+    // Do NOT store the version if import failed
+    console.error('Version was NOT stored due to import failure');
     throw error;
   }
 };
