@@ -155,9 +155,7 @@ const ChecklistView = ({
               onChange={(e) => setNewItemText(e.target.value)}
               onKeyDown={handleKeyDown}
               onBlur={() => {
-                if (newItemText.trim()) {
-                  handleAddItem();
-                } else {
+                if (!newItemText.trim()) {
                   setIsAddingItem(false);
                   setNewItemText('');
                 }

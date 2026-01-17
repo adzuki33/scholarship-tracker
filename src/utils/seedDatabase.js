@@ -1,20 +1,20 @@
 /**
- * Seed Database Utility with Versioning System
+ * Seed Database Utility with CreatedAt Timestamp Versioning System
  * 
- * This module handles intelligent seed data import with version tracking.
- * When the seed data version is updated, it reimports seed scholarships while
+ * This module handles intelligent seed data import with timestamp-based version tracking.
+ * When the seed data createdAt timestamp is updated, it reimports seed scholarships while
  * preserving user-created data.
  * 
  * How to update seed data:
  * 1. Export your data as "Seed Data Export" from Data Management
  * 2. Replace src/data/seedData.json with the exported file
- * 3. Increment the "version" field in seedData.json (e.g., "1.0" -> "1.1")
+ * 3. Update the "createdAt" field in seedData.json to current timestamp
  * 4. Commit and deploy - returning visitors will automatically get updated seed data
  * 
  * The versioning system:
- * - Tracks current seed version in localStorage
- * - Compares with seedData.json version on each app load
- * - If versions differ, reimports seed data intelligently
+ * - Tracks current seed createdAt in IndexedDB metadata
+ * - Compares with seedData.json createdAt on each app load
+ * - If timestamps differ, reimports seed data intelligently
  * - Deletes old system scholarships (createdBy: 'system')
  * - Imports new seed scholarships with createdBy: 'system'
  * - Preserves user scholarships (createdBy: 'user')
@@ -29,73 +29,82 @@ import {
   getChecklistItems,
   deleteChecklistItem,
   createDocument,
-  createTemplate
+  createTemplate,
+  getMetadata,
+  setMetadata
 } from '../db/indexeddb';
 
-const SEED_VERSION_KEY = 'scholarship-tracker-seed-version';
+const SEED_CREATEDAT_KEY = 'seedDataCreatedAt';
 
 /**
- * Get the currently installed seed data version
+ * Get the currently installed seed data createdAt timestamp
  */
-export const getCurrentSeedVersion = () => {
+export const getCurrentSeedCreatedAt = async () => {
   try {
-    const version = localStorage.getItem(SEED_VERSION_KEY);
-    console.log('Retrieved current seed version from localStorage:', version);
-    return version;
+    const createdAt = await getMetadata(SEED_CREATEDAT_KEY);
+    console.log('Retrieved current seed createdAt from IndexedDB:', createdAt);
+    return createdAt;
   } catch (error) {
-    console.error('Error reading seed version from localStorage:', error);
+    console.error('Error reading seed createdAt from IndexedDB:', error);
     return null;
   }
 };
 
 /**
- * Save the current seed data version
+ * Save the current seed data createdAt timestamp
  */
-export const setSeedVersion = (version) => {
+export const setSeedCreatedAt = async (createdAt) => {
   try {
-    console.log('Storing seed version to localStorage:', version);
-    localStorage.setItem(SEED_VERSION_KEY, version);
-    console.log('Seed version stored successfully');
+    console.log('Storing seed createdAt to IndexedDB:', createdAt);
+    await setMetadata(SEED_CREATEDAT_KEY, createdAt);
+    console.log('Seed createdAt stored successfully');
   } catch (error) {
-    console.error('Error storing seed version to localStorage:', error);
+    console.error('Error storing seed createdAt to IndexedDB:', error);
     throw error;
   }
 };
 
 /**
- * Check if seed data needs to be updated
+ * Check if seed data needs to be updated based on createdAt comparison
  */
-export const needsSeedUpdate = () => {
-  const currentVersion = getCurrentSeedVersion();
-  const newVersion = seedData?.version;
+export const needsSeedUpdate = async () => {
+  try {
+    const currentCreatedAt = await getCurrentSeedCreatedAt();
+    const newCreatedAt = seedData?.createdAt;
 
-  console.log('Seed version comparison:', {
-    currentVersion,
-    newVersion,
-    versionMatch: currentVersion === newVersion,
-    isFirstVisit: !currentVersion
-  });
+    console.log('=== SEED DATABASE: Starting createdAt comparison ===');
+    console.log('Seed createdAt comparison:', {
+      currentCreatedAt,
+      newCreatedAt,
+      timestampsMatch: currentCreatedAt === newCreatedAt,
+      isFirstVisit: !currentCreatedAt
+    });
 
-  // First time visit - no version set (including case where localStorage is inaccessible)
-  if (!currentVersion) {
-    console.log('-> Update needed: First visit or localStorage unavailable');
+    // First time visit - no createdAt stored (including case where IndexedDB is inaccessible)
+    if (!currentCreatedAt) {
+      console.log('-> Update needed: First visit or IndexedDB unavailable');
+      return true;
+    }
+
+    // Missing createdAt in seed data - treat as needing update to be safe
+    if (!newCreatedAt) {
+      console.log('-> Update needed: Seed data missing createdAt field');
+      return true;
+    }
+
+    // createdAt mismatch - need update
+    if (currentCreatedAt !== newCreatedAt) {
+      console.log(`-> Update needed: createdAt changed from "${currentCreatedAt}" to "${newCreatedAt}"`);
+      return true;
+    }
+
+    console.log('-> No update needed: createdAt timestamps match');
+    return false;
+  } catch (error) {
+    console.error('Error checking seed update status:', error);
+    // If we can't check, assume update is needed to be safe
     return true;
   }
-
-  // Missing version in seed data - treat as needing update to be safe
-  if (!newVersion) {
-    console.log('-> Update needed: Seed data missing version field');
-    return true;
-  }
-
-  // Version mismatch - need update
-  if (currentVersion !== newVersion) {
-    console.log(`-> Update needed: Version changed from "${currentVersion}" to "${newVersion}"`);
-    return true;
-  }
-
-  console.log('-> No update needed: Versions match');
-  return false;
 };
 
 /**
@@ -208,18 +217,18 @@ const importSeedTemplates = async (templates) => {
 };
 
 /**
- * Main seed database function with versioning support
+ * Main seed database function with createdAt timestamp support
  * This function:
- * - Checks if seed data version has changed
+ * - Checks if seed data createdAt has changed
  * - On first visit: imports all seed data
- * - On version change: reimports seed scholarships, preserves user data
- * - On same version: does nothing
+ * - On createdAt change: reimports seed scholarships, preserves user data
+ * - On same createdAt: does nothing
  */
 export const seedDatabase = async () => {
   try {
-    console.log('=== SEED DATABASE: Starting version check ===');
+    console.log('=== SEED DATABASE: Starting timestamp check ===');
     console.log('Seed data loaded:', {
-      version: seedData?.version,
+      createdAt: seedData?.createdAt,
       hasData: !!seedData?.data,
       scholarshipCount: seedData?.data?.scholarships?.length || 0,
       checklistItemCount: seedData?.data?.checklistItems?.length || 0
@@ -231,9 +240,9 @@ export const seedDatabase = async () => {
       throw new Error('Seed data is invalid or missing');
     }
     
-    if (!seedData.version) {
-      console.error('Invalid seed data: version field is missing');
-      throw new Error('Seed data version is missing');
+    if (!seedData.createdAt) {
+      console.error('Invalid seed data: createdAt field is missing');
+      throw new Error('Seed data createdAt is missing');
     }
     
     if (!seedData.data || !Array.isArray(seedData.data.scholarships)) {
@@ -243,26 +252,26 @@ export const seedDatabase = async () => {
     
     const allScholarships = await getAllScholarships();
     const isFirstTime = allScholarships.length === 0;
-    const needsUpdate = needsSeedUpdate();
+    const needsUpdate = await needsSeedUpdate();
     
     console.log('Seed check results:', {
       isFirstTime,
       needsUpdate,
       scholarshipCount: allScholarships.length,
-      currentVersion: getCurrentSeedVersion(),
-      newVersion: seedData.version
+      currentCreatedAt: await getCurrentSeedCreatedAt(),
+      newCreatedAt: seedData.createdAt
     });
     
     // Only skip import if we don't need an update AND we already have data
     if (!needsUpdate && !isFirstTime) {
-      console.log('=== SEED DATABASE: Version is up to date, skipping import ===');
+      console.log('=== SEED DATABASE: createdAt timestamp is up to date, skipping import ===');
       return;
     }
     
     if (isFirstTime) {
       console.log('=== SEED DATABASE: First time visit - importing all seed data ===');
     } else {
-      console.log('=== SEED DATABASE: Version changed - updating seed data ===');
+      console.log('=== SEED DATABASE: createdAt timestamp changed - updating seed data ===');
       // Delete old system scholarships before importing new ones
       await deleteSystemScholarships();
     }
@@ -295,9 +304,9 @@ export const seedDatabase = async () => {
       }
     }
     
-    // Only update the stored version AFTER successful import
-    console.log(`=== SEED DATABASE: Import successful, updating version to ${seedData.version} ===`);
-    setSeedVersion(seedData.version);
+    // Only update the stored createdAt AFTER successful import
+    console.log(`=== SEED DATABASE: Import successful, updating createdAt to ${seedData.createdAt} ===`);
+    await setSeedCreatedAt(seedData.createdAt);
     
     // Verify import by checking the database
     const finalScholarships = await getAllScholarships();
@@ -313,17 +322,17 @@ export const seedDatabase = async () => {
   } catch (error) {
     console.error('=== SEED DATABASE: ERROR ===');
     console.error('Error seeding database:', error);
-    // Do NOT store the version if import failed
-    console.error('Version was NOT stored due to import failure');
+    // Do NOT store the createdAt if import failed
+    console.error('createdAt was NOT stored due to import failure');
     throw error;
   }
 };
 
 /**
- * Reset seed version marker (for testing/debugging)
+ * Reset seed createdAt marker (for testing/debugging)
  * This will cause the seed data to be reimported on next reload
  */
 export const resetSeedVersion = () => {
-  localStorage.removeItem(SEED_VERSION_KEY);
-  console.log('Seed version reset. Database will be reseeded on next reload.');
+  setMetadata(SEED_CREATEDAT_KEY, null);
+  console.log('Seed createdAt reset. Database will be reseeded on next reload.');
 };
