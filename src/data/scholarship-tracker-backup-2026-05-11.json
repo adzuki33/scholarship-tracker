@@ -1,5 +1,6 @@
 {
-  "createdAt": "2026-05-11T11:22:04.546Z",
+  "version": "1.0",
+  "exportedAt": "2026-05-11T11:22:30.585Z",
   "data": {
     "scholarships": [
       {
@@ -704,7 +705,6 @@
         "updatedAt": "2026-03-28T16:37:18.353Z",
         "id": 2
       }
-    ],
-    "templates": []
+    ]
   }
 }
