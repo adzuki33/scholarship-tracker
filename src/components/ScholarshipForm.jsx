@@ -11,7 +11,9 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel, onTemp
     country: '',
     applicationYear: new Date().getFullYear(),
     deadline: '',
+    interviewDate: '',
     status: 'Not Started',
+    outcome: '',
     note: '',
     requiredDocumentIds: [],
   });
@@ -30,7 +32,9 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel, onTemp
         country: scholarship.country,
         applicationYear: scholarship.applicationYear,
         deadline: scholarship.deadline.split('T')[0],
+        interviewDate: scholarship.interviewDate ? scholarship.interviewDate.split('T')[0] : '',
         status: scholarship.status,
+        outcome: scholarship.outcome || '',
         note: scholarship.note || '',
         requiredDocumentIds: scholarship.requiredDocumentIds || [],
       });
@@ -43,7 +47,9 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel, onTemp
         country: '',
         applicationYear: new Date().getFullYear(),
         deadline: '',
+        interviewDate: '',
         status: 'Not Started',
+        outcome: '',
         note: '',
         requiredDocumentIds: [],
       });
@@ -99,6 +105,8 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel, onTemp
       const dataToSave = {
         ...formData,
         deadline: new Date(formData.deadline).toISOString(),
+        interviewDate: formData.interviewDate ? new Date(formData.interviewDate).toISOString() : '',
+        outcome: formData.status === 'Result' ? (formData.outcome || null) : null,
       };
       onSave(dataToSave, selectedTemplate);
     }
@@ -325,6 +333,42 @@ const ScholarshipForm = ({ scholarship, documents = [], onSave, onCancel, onTemp
               <option value="Result">Result</option>
             </select>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="interviewDate" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Interview Date <span className="text-gray-400 dark:text-gray-500">(optional)</span>
+            </label>
+            <input
+              type="date"
+              id="interviewDate"
+              name="interviewDate"
+              value={formData.interviewDate}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+            />
+          </div>
+
+          {formData.status === 'Result' && (
+            <div>
+              <label htmlFor="outcome" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Outcome
+              </label>
+              <select
+                id="outcome"
+                name="outcome"
+                value={formData.outcome}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+              >
+                <option value="">— Pending —</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Waitlisted">Waitlisted</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+          )}
         </div>
 
         <div>

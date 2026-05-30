@@ -1,5 +1,5 @@
 const DB_NAME = 'ScholarshipTrackerDB';
-const DB_VERSION = 9;
+const DB_VERSION = 10;
 const STORE_NAME = 'scholarships';
 const CHECKLIST_STORE_NAME = 'checklistItems';
 const DOCUMENTS_STORE_NAME = 'documents';
@@ -46,6 +46,8 @@ const normalizeScholarship = (scholarship) => {
     ...scholarship,
     note: typeof scholarship.note === 'string' ? scholarship.note : '',
     requiredDocumentIds: normalizeRequiredDocumentIds(scholarship.requiredDocumentIds),
+    outcome: scholarship.outcome ?? null,
+    interviewDate: typeof scholarship.interviewDate === 'string' ? scholarship.interviewDate : '',
   };
 };
 
@@ -288,6 +290,25 @@ export const initDB = () => {
             checklistStore.deleteIndex(indexName);
           }
         });
+      }
+
+      if (oldVersion < 10 && transaction && db.objectStoreNames.contains(STORE_NAME)) {
+        const scholarshipStore = transaction.objectStore(STORE_NAME);
+        const cursorRequest = scholarshipStore.openCursor();
+
+        cursorRequest.onsuccess = (cursorEvent) => {
+          const cursor = cursorEvent.target.result;
+          if (!cursor) {
+            return;
+          }
+
+          const value = cursor.value;
+          if (value.outcome === undefined || value.interviewDate === undefined) {
+            cursor.update(normalizeScholarship(value));
+          }
+
+          cursor.continue();
+        };
       }
     };
   });
