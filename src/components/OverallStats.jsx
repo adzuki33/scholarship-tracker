@@ -1,4 +1,5 @@
 import React from 'react';
+import { getOutcomeBadgeClass } from '../utils/stats';
 
 const statusColors = {
   'Not Started': 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600',
@@ -9,7 +10,7 @@ const statusColors = {
 };
 
 const OverallStats = ({ stats }) => {
-  const { totalScholarships, byStatus, avgCompletion, overdueCount, documentStats } = stats;
+  const { totalScholarships, byStatus, avgCompletion, overdueCount, documentStats, outcomes, successRate } = stats;
 
   return (
     <div className="space-y-6">
@@ -97,6 +98,29 @@ const OverallStats = ({ stats }) => {
           ))}
         </div>
       </div>
+
+      {outcomes && (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Application Outcomes</h3>
+            <div className="text-right">
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{successRate}%</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">success rate (accepted / decided)</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {['Accepted', 'Waitlisted', 'Rejected', 'Pending'].map((key) => (
+              <div
+                key={key}
+                className={`border rounded-lg p-3 text-center ${getOutcomeBadgeClass(key === 'Pending' ? null : key)}`}
+              >
+                <p className="text-2xl font-bold">{outcomes[key]}</p>
+                <p className="text-xs font-medium mt-1">{key}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
