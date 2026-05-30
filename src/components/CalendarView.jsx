@@ -8,7 +8,7 @@ import {
   getShortDayName,
   isToday,
 } from '../utils/calendarUtils';
-import { groupScholarshipsByDate } from '../utils/filterScholarships';
+import { groupScholarshipsByDate, groupScholarshipsByInterviewDate } from '../utils/filterScholarships';
 import { hasActiveDeadline } from '../utils/stats';
 import CalendarDay from './CalendarDay';
 import CalendarDetail from './CalendarDetail';
@@ -24,12 +24,19 @@ const CalendarView = ({ scholarships, onViewChecklist, onEdit }) => {
   const [currentDate, setCurrentDate] = useState(getToday());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedScholarships, setSelectedScholarships] = useState([]);
+  const [selectedInterviews, setSelectedInterviews] = useState([]);
 
   const today = getToday();
 
   // Group scholarships by date for quick lookup
   const scholarshipsByDate = useMemo(
     () => groupScholarshipsByDate(scholarships),
+    [scholarships]
+  );
+
+  // Group scholarships by interview date for quick lookup
+  const interviewsByDate = useMemo(
+    () => groupScholarshipsByInterviewDate(scholarships),
     [scholarships]
   );
 
@@ -51,14 +58,16 @@ const CalendarView = ({ scholarships, onViewChecklist, onEdit }) => {
     setCurrentDate(getToday());
   }, []);
 
-  const handleDayClick = useCallback((dayInfo, dayScholarships) => {
+  const handleDayClick = useCallback((dayInfo, dayScholarships, dayInterviews = []) => {
     setSelectedDate(dayInfo);
     setSelectedScholarships(dayScholarships);
+    setSelectedInterviews(dayInterviews);
   }, []);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedDate(null);
     setSelectedScholarships([]);
+    setSelectedInterviews([]);
   }, []);
 
   const handleViewChecklist = useCallback(
@@ -159,6 +168,7 @@ const CalendarView = ({ scholarships, onViewChecklist, onEdit }) => {
           {calendarDays.map((day, index) => {
             const dateKey = `${day.year}-${String(day.month + 1).padStart(2, '0')}-${String(day.day).padStart(2, '0')}`;
             const dayScholarships = scholarshipsByDate[dateKey] || [];
+            const dayInterviews = interviewsByDate[dateKey] || [];
             const isTodayDate = day.isCurrentMonth && isToday(day.year, day.month, day.day);
 
             return (
@@ -166,6 +176,7 @@ const CalendarView = ({ scholarships, onViewChecklist, onEdit }) => {
                 key={index}
                 day={day}
                 scholarships={dayScholarships}
+                interviews={dayInterviews}
                 onClick={handleDayClick}
                 isToday={isTodayDate}
               />
@@ -230,6 +241,7 @@ const CalendarView = ({ scholarships, onViewChecklist, onEdit }) => {
       {/* Detail Modal */}
       <CalendarDetail
         scholarships={selectedScholarships}
+        interviews={selectedInterviews}
         selectedDate={selectedDate}
         onClose={handleCloseDetail}
         onViewChecklist={handleViewChecklist}

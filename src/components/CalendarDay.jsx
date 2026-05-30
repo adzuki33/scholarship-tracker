@@ -9,8 +9,10 @@ import { getDaysUntilDeadline, getCalendarUrgencyColor } from '../utils/calendar
  * @param {Function} onClick - Click handler for the day
  * @param {boolean} isToday - Whether this day is today
  */
-const CalendarDay = ({ day, scholarships, onClick, isToday }) => {
+const CalendarDay = ({ day, scholarships, interviews = [], onClick, isToday }) => {
   const hasScholarships = scholarships && scholarships.length > 0;
+  const hasInterviews = interviews && interviews.length > 0;
+  const isClickable = hasScholarships || hasInterviews;
 
   // Get urgency color for scholarships
   const urgencyColor = useMemo(() => {
@@ -35,11 +37,11 @@ const CalendarDay = ({ day, scholarships, onClick, isToday }) => {
     ${day.isPadding ? 'bg-gray-50 dark:bg-gray-800/50' : 'bg-white dark:bg-gray-800'}
     ${!day.isCurrentMonth ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'}
     ${isToday ? 'ring-2 ring-blue-500 dark:ring-blue-400 ring-inset z-10' : ''}
-    ${hasScholarships ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}
+    ${isClickable ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}
   `;
 
   return (
-    <div className={dayClass} onClick={() => hasScholarships && onClick(day, scholarships)}>
+    <div className={dayClass} onClick={() => isClickable && onClick(day, scholarships, interviews)}>
       {/* Day number */}
       <div
         className={`
@@ -92,6 +94,26 @@ const CalendarDay = ({ day, scholarships, onClick, isToday }) => {
               }}
             >
               +{scholarships.length - 2} more
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Interview indicators */}
+      {hasInterviews && (
+        <div className="space-y-1 mt-1">
+          {interviews.slice(0, 2).map((scholarship) => (
+            <div
+              key={`interview-${scholarship.id}`}
+              className="text-xs truncate px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-l-2 border-purple-500"
+              title={`Interview: ${scholarship.name}`}
+            >
+              🎤 {scholarship.name.length > 10 ? scholarship.name.substring(0, 10) + '…' : scholarship.name}
+            </div>
+          ))}
+          {interviews.length > 2 && (
+            <div className="text-xs font-medium text-center rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+              +{interviews.length - 2} interview{interviews.length - 2 === 1 ? '' : 's'}
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import OverallStats from './OverallStats';
 import ProgressCard from './ProgressCard';
 import UpcomingDeadlines from './UpcomingDeadlines';
-import { calculateScholarshipProgress, getUpcomingDeadlines, getOverallStats } from '../utils/stats';
+import { calculateScholarshipProgress, getUpcomingEvents, getOverallStats } from '../utils/stats';
 
 const DashboardView = ({ 
   scholarships, 
@@ -11,7 +11,7 @@ const DashboardView = ({
   onViewChecklist,
   onAddScholarship 
 }) => {
-  const scholarshipsWithDeadlines = getUpcomingDeadlines(scholarships);
+  const scholarshipsWithDeadlines = getUpcomingEvents(scholarships);
   const stats = getOverallStats(scholarships, checklistItemsByScholarship, documents);
 
   return (

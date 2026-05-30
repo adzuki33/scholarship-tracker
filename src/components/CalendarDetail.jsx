@@ -12,6 +12,7 @@ import { getUrgencyLevel, getUrgencyBgColor } from '../utils/stats';
  */
 const CalendarDetail = ({
   scholarships,
+  interviews = [],
   selectedDate,
   onClose,
   onViewChecklist,
@@ -30,7 +31,14 @@ const CalendarDetail = ({
     });
   }, []);
 
-  if (!selectedDate || scholarships.length === 0) return null;
+  if (!selectedDate || (scholarships.length === 0 && interviews.length === 0)) return null;
+
+  const headerTitle =
+    scholarships.length > 0 && interviews.length > 0
+      ? 'Events'
+      : interviews.length > 0
+        ? 'Interviews'
+        : 'Deadlines';
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
@@ -47,7 +55,7 @@ const CalendarDetail = ({
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Deadlines
+                {headerTitle}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {formatDate(selectedDate)}
@@ -75,8 +83,12 @@ const CalendarDetail = ({
           </div>
 
           {/* Content */}
-          <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+          <div className="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-5">
+            {scholarships.length > 0 && (
             <div className="space-y-3">
+              {interviews.length > 0 && (
+                <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Deadlines</h4>
+              )}
               {scholarships.map((scholarship) => {
                 const daysUntil = getDaysUntilDeadline(scholarship.deadline);
                 const urgency = getUrgencyLevel(daysUntil);
@@ -125,6 +137,54 @@ const CalendarDetail = ({
                 );
               })}
             </div>
+            )}
+
+            {interviews.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">Interviews</h4>
+                {interviews.map((scholarship) => (
+                  <div
+                    key={`interview-${scholarship.id}`}
+                    className="p-4 rounded-lg border bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">
+                          🎤 {scholarship.name}
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          {scholarship.provider}
+                        </p>
+                      </div>
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300">
+                        Interview
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 mb-3">
+                      <span>{scholarship.country}</span>
+                      <span>·</span>
+                      <span>{scholarship.degreeLevel}</span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onViewChecklist(scholarship.id)}
+                        className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-colors"
+                      >
+                        View Checklist
+                      </button>
+                      <button
+                        onClick={() => onEdit(scholarship)}
+                        className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Footer */}
