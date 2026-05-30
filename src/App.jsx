@@ -27,6 +27,7 @@ import {
   snoozeReminderUntil,
 } from './utils/reminders';
 import TemplateManager from './components/TemplateManager';
+import { useToast } from './contexts/ToastContext';
 
 function App() {
   const [scholarships, setScholarships] = useState([]);
@@ -45,6 +46,7 @@ function App() {
   const [reminderPreferences, setReminderPreferences] = useState(() => loadReminderPreferences());
   const [dismissedReminders, setDismissedReminders] = useState(() => loadDismissedReminders());
   const [activeReminders, setActiveReminders] = useState([]);
+  const { toast } = useToast();
 
   const getDateOnly = useCallback((value) => {
     if (!value) return '';
@@ -228,31 +230,37 @@ function App() {
       
       await loadScholarships();
       await loadAllChecklistItems();
+      toast('Scholarship created', { type: 'success' });
       setView('list');
     } catch (error) {
       console.error('Error creating scholarship:', error);
+      toast('Failed to create scholarship', { type: 'error' });
     }
-  }, [normalizeChecklistItemFlags]);
+  }, [normalizeChecklistItemFlags, toast]);
 
   const handleUpdateScholarship = useCallback(async (data) => {
     try {
       await updateScholarship(editingScholarship.id, data);
       await loadScholarships();
+      toast('Scholarship updated', { type: 'success' });
       setView('list');
       setEditingScholarship(null);
     } catch (error) {
       console.error('Error updating scholarship:', error);
+      toast('Failed to update scholarship', { type: 'error' });
     }
-  }, [editingScholarship]);
+  }, [editingScholarship, toast]);
 
   const handleDeleteScholarship = useCallback(async (id) => {
     try {
       await deleteScholarship(id);
       await loadScholarships();
+      toast('Scholarship deleted', { type: 'success' });
     } catch (error) {
       console.error('Error deleting scholarship:', error);
+      toast('Failed to delete scholarship', { type: 'error' });
     }
-  }, []);
+  }, [toast]);
 
   const handleEdit = useCallback((scholarship) => {
     setEditingScholarship(scholarship);
