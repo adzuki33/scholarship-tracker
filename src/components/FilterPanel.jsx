@@ -14,6 +14,8 @@ const DEADLINE_PRESETS = [
   { value: 'thisQuarter', label: 'This Quarter' },
 ];
 
+const OUTCOME_OPTIONS = ['Accepted', 'Waitlisted', 'Rejected'];
+
 /**
  * FilterPanel component for filtering scholarships
  * @param {Array} scholarships - All scholarships for extracting filter options
@@ -87,6 +89,17 @@ const FilterPanel = ({
     [filters, onFilterChange]
   );
 
+  const handleOutcomeToggle = useCallback(
+    (outcome) => {
+      const currentOutcomes = filters.outcome || [];
+      const newOutcomes = currentOutcomes.includes(outcome)
+        ? currentOutcomes.filter((o) => o !== outcome)
+        : [...currentOutcomes, outcome];
+      onFilterChange({ ...filters, outcome: newOutcomes });
+    },
+    [filters, onFilterChange]
+  );
+
   const handleDeadlinePresetChange = useCallback(
     (preset) => {
       const currentDeadline = filters.deadlineRange || {};
@@ -128,6 +141,7 @@ const FilterPanel = ({
 
   const activeFilterCount =
     (filters.status?.length || 0) +
+    (filters.outcome?.length || 0) +
     (filters.country?.length || 0) +
     (filters.deadlineRange?.type ? 1 : 0) +
     (filters.activeDeadlineOnly ? 1 : 0);
@@ -289,6 +303,31 @@ const FilterPanel = ({
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Outcome Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Outcome
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {OUTCOME_OPTIONS.map((outcome) => {
+                const isSelected = filters.outcome?.includes(outcome);
+                return (
+                  <button
+                    key={outcome}
+                    onClick={() => handleOutcomeToggle(outcome)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
+                      isSelected
+                        ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                        : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {outcome}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Country Filter */}

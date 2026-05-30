@@ -18,6 +18,7 @@ const MobileFilterDrawer = ({
 }) => {
   const [tempFilters, setTempFilters] = useState({
     status: [],
+    outcome: [],
     country: [],
     deadlineRange: null,
     ...currentFilters
@@ -38,6 +39,18 @@ const MobileFilterDrawer = ({
         ? prev.status.filter(s => s !== status)
         : [...prev.status, status]
     }));
+  };
+
+  const handleOutcomeToggle = (outcome) => {
+    setTempFilters(prev => {
+      const current = prev.outcome || [];
+      return {
+        ...prev,
+        outcome: current.includes(outcome)
+          ? current.filter(o => o !== outcome)
+          : [...current, outcome]
+      };
+    });
   };
 
   const handleCountryToggle = (country) => {
@@ -72,6 +85,7 @@ const MobileFilterDrawer = ({
   const handleReset = () => {
     const resetFilters = {
       status: [],
+      outcome: [],
       country: [],
       deadlineRange: null,
     };
@@ -142,6 +156,24 @@ const MobileFilterDrawer = ({
                       className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-gray-900 dark:text-gray-100">{status}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Outcome Filter */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Outcome</h4>
+              <div className="space-y-2">
+                {['Accepted', 'Waitlisted', 'Rejected'].map(outcome => (
+                  <label key={outcome} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={(tempFilters.outcome || []).includes(outcome)}
+                      onChange={() => handleOutcomeToggle(outcome)}
+                      className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-gray-900 dark:text-gray-100">{outcome}</span>
                   </label>
                 ))}
               </div>

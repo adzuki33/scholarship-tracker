@@ -1,5 +1,5 @@
 import React from 'react';
-import { getNextStatus } from '../utils/stats';
+import { getNextStatus, getOutcomeBadgeClass, SCHOLARSHIP_OUTCOMES } from '../utils/stats';
 
 const statusColors = {
   'Not Started': 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200',
@@ -26,6 +26,7 @@ const ScholarshipCard = ({
   checklistItems,
   documents = [],
   onAdvanceStatus,
+  onSetOutcome,
 }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -94,6 +95,29 @@ const ScholarshipCard = ({
             >
               → {getNextStatus(scholarship.status)}
             </button>
+          )}
+          {scholarship.status === 'Result' && scholarship.outcome && (
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getOutcomeBadgeClass(scholarship.outcome)}`}>
+              {scholarship.outcome}
+            </span>
+          )}
+          {scholarship.status === 'Result' && !scholarship.outcome && onSetOutcome && (
+            <div className="flex gap-1">
+              {SCHOLARSHIP_OUTCOMES.map((o) => (
+                <button
+                  key={o}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSetOutcome(scholarship.id, o);
+                  }}
+                  className="px-2 py-1 rounded text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800"
+                  title={`Mark ${scholarship.name} as ${o}`}
+                  aria-label={`Mark ${scholarship.name} as ${o}`}
+                >
+                  {o}
+                </button>
+              ))}
+            </div>
           )}
         </div>
       </div>

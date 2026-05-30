@@ -14,7 +14,7 @@ import BottomNav from './components/BottomNav';
 import ReminderTray from './components/ReminderTray';
 import { getAllScholarships, createScholarship, updateScholarship, deleteScholarship, getChecklistItems, createChecklistItem, createChecklistItemsBulk, updateChecklistItem, deleteChecklistItem, reorderChecklistItems, getAllDocuments } from './db/indexeddb';
 import { seedDatabase } from './utils/seedDatabase';
-import { getNextStatus } from './utils/stats';
+import { getNextStatus, getDocumentReadiness } from './utils/stats';
 import {
   DEFAULT_REMINDER_PREFERENCES,
   evaluateReminders,
@@ -391,11 +391,30 @@ function App() {
   const handleAdvanceScholarshipStatus = useCallback(async (id, currentStatus) => {
     const nextStatus = getNextStatus(currentStatus);
     if (!nextStatus) return;
+    if (nextStatus === 'Submitted') {
+      const scholarship = scholarships.find((s) => s.id === id);
+      const { ready, total, allReady } = getDocumentReadiness(scholarship, documents);
+      if (total > 0 && !allReady) {
+        const ok = window.confirm(
+          `Only ${ready} of ${total} required documents are ready. Mark as Submitted anyway?`
+        );
+        if (!ok) return;
+      }
+    }
     try {
       await updateScholarship(id, { status: nextStatus });
       await loadScholarships();
     } catch (error) {
       console.error('Error advancing scholarship status:', error);
+    }
+  }, [scholarships, documents]);
+
+  const handleSetScholarshipOutcome = useCallback(async (id, outcome) => {
+    try {
+      await updateScholarship(id, { outcome });
+      await loadScholarships();
+    } catch (error) {
+      console.error('Error setting scholarship outcome:', error);
     }
   }, []);
 
@@ -548,6 +567,19 @@ function App() {
       return {
         ...prev,
         thresholds: nextThresholds.length > 0 ? nextThresholds : [7, 3, 1, 0],
+      };
+    });
+  }, []);
+
+  const handleAddThreshold = useCallback((value) => {
+    const day = Number(value);
+    if (!Number.isFinite(day) || day < 0) return;
+    setReminderPreferences((prev) => {
+      const current = Array.isArray(prev.thresholds) ? prev.thresholds : [];
+      if (current.includes(day)) return prev;
+      return {
+        ...prev,
+        thresholds: [...current, day].sort((a, b) => b - a),
       };
     });
   }, []);
@@ -739,6 +771,7 @@ function App() {
           onToggleEnabled={handleToggleReminderEnabled}
           onToggleQuietMode={handleToggleQuietMode}
           onToggleThreshold={handleToggleThreshold}
+          onAddThreshold={handleAddThreshold}
           onEnableBrowserNotifications={handleEnableBrowserNotifications}
           onDismiss={handleDismissReminder}
           onSnooze={handleSnoozeReminder}
@@ -764,6 +797,7 @@ function App() {
               checklistItemsByScholarship={checklistItemsByScholarship}
               documents={documents}
               onAdvanceStatus={handleAdvanceScholarshipStatus}
+              onSetOutcome={handleSetScholarshipOutcome}
             />
           ) : view === 'checklist' ? (
             <ChecklistView

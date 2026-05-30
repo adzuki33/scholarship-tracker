@@ -51,6 +51,7 @@ const ScholarshipList = ({
   checklistItemsByScholarship,
   documents = [],
   onAdvanceStatus,
+  onSetOutcome,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({});
@@ -303,6 +304,7 @@ const ScholarshipList = ({
               checklistItems={checklistItemsByScholarship?.[scholarship.id] || []}
               documents={documents}
               onAdvanceStatus={onAdvanceStatus}
+              onSetOutcome={onSetOutcome}
             />
           ))}
         </div>

@@ -27,6 +27,13 @@ export const filterScholarships = (scholarships, filters = {}) => {
     );
   }
 
+  // Filter by outcome (OR logic - only scholarships with a matching recorded outcome)
+  if (filters.outcome && filters.outcome.length > 0) {
+    filtered = filtered.filter(
+      (scholarship) => scholarship.outcome && filters.outcome.includes(scholarship.outcome)
+    );
+  }
+
   // Filter by country (OR logic within country - show scholarships matching any selected country)
   if (filters.country && filters.country.length > 0) {
     filtered = filtered.filter((scholarship) =>
@@ -136,6 +143,27 @@ export const groupScholarshipsByDate = (scholarships) => {
   scholarships.forEach((scholarship) => {
     if (scholarship.deadline) {
       const dateKey = new Date(scholarship.deadline).toISOString().split('T')[0];
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(scholarship);
+    }
+  });
+
+  return grouped;
+};
+
+/**
+ * Group scholarships by interview date
+ * @param {Array} scholarships - Array of scholarship objects
+ * @returns {Object} Object with date strings as keys and arrays of scholarships as values
+ */
+export const groupScholarshipsByInterviewDate = (scholarships) => {
+  const grouped = {};
+
+  scholarships.forEach((scholarship) => {
+    if (scholarship.interviewDate) {
+      const dateKey = new Date(scholarship.interviewDate).toISOString().split('T')[0];
       if (!grouped[dateKey]) {
         grouped[dateKey] = [];
       }

@@ -19,6 +19,26 @@ export const getNextStatus = (currentStatus) => {
   return SCHOLARSHIP_STATUS_ORDER[index + 1];
 };
 
+export const SCHOLARSHIP_OUTCOMES = ['Accepted', 'Waitlisted', 'Rejected'];
+
+export const getOutcomeBadgeClass = (outcome) =>
+  ({
+    Accepted: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+    Waitlisted: 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200',
+    Rejected: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
+  }[outcome] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200');
+
+export const getDocumentReadiness = (scholarship, documents = []) => {
+  const ids = scholarship?.requiredDocumentIds || [];
+  const readyStatuses = new Set(['Final', 'Uploaded']);
+  const total = ids.length;
+  const ready = ids.filter((id) => {
+    const doc = documents.find((d) => d.id === id);
+    return doc && readyStatuses.has(doc.status);
+  }).length;
+  return { ready, total, allReady: total > 0 && ready === total };
+};
+
 export const calculateScholarshipProgress = (scholarshipId, checklistItems) => {
   const items = checklistItems[scholarshipId] || [];
   const total = items.length;
@@ -50,6 +70,45 @@ export const getUpcomingDeadlines = (scholarships) => {
       };
     })
     .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+};
+
+export const getUpcomingEvents = (scholarships) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dayMs = 1000 * 60 * 60 * 24;
+  const events = [];
+
+  scholarships.forEach(scholarship => {
+    if (hasActiveDeadline(scholarship) && scholarship.deadline) {
+      const deadline = new Date(scholarship.deadline);
+      deadline.setHours(0, 0, 0, 0);
+      const daysUntilDeadline = Math.ceil((deadline - today) / dayMs);
+      events.push({
+        ...scholarship,
+        eventType: 'deadline',
+        eventDate: scholarship.deadline,
+        daysUntilDeadline,
+        urgency: getUrgencyLevel(daysUntilDeadline)
+      });
+    }
+
+    if (scholarship.interviewDate) {
+      const interview = new Date(scholarship.interviewDate);
+      interview.setHours(0, 0, 0, 0);
+      const daysUntilDeadline = Math.ceil((interview - today) / dayMs);
+      if (daysUntilDeadline >= 0) {
+        events.push({
+          ...scholarship,
+          eventType: 'interview',
+          eventDate: scholarship.interviewDate,
+          daysUntilDeadline,
+          urgency: getUrgencyLevel(daysUntilDeadline)
+        });
+      }
+    }
+  });
+
+  return events.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
 };
 
 export const getOverallStats = (scholarships, checklistData, documents = []) => {
@@ -101,13 +160,27 @@ export const getOverallStats = (scholarships, checklistData, documents = []) => 
     draft: documents.filter(doc => doc.status === 'Draft').length,
     notReady: documents.filter(doc => doc.status === 'NotReady').length
   };
-  
+
+  const outcomes = { Accepted: 0, Waitlisted: 0, Rejected: 0, Pending: 0 };
+  scholarships.forEach(scholarship => {
+    if (scholarship.status !== 'Result') return;
+    if (Object.prototype.hasOwnProperty.call(outcomes, scholarship.outcome)) {
+      outcomes[scholarship.outcome]++;
+    } else {
+      outcomes.Pending++;
+    }
+  });
+  const decided = outcomes.Accepted + outcomes.Rejected;
+  const successRate = decided > 0 ? Math.round((outcomes.Accepted / decided) * 100) : 0;
+
   return {
     totalScholarships,
     byStatus,
     avgCompletion,
     overdueCount,
-    documentStats
+    documentStats,
+    outcomes,
+    successRate
   };
 };
 
