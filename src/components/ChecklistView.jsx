@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import ChecklistItem from './ChecklistItem';
 import DocumentRequirements from './DocumentRequirements';
+import { computeChecklistProgress } from '../utils/checklistMeta';
 
 const ChecklistView = ({
   scholarship,
@@ -23,6 +24,9 @@ const ChecklistView = ({
   const [bulkInputText, setBulkInputText] = useState('');
   const [bulkStatus, setBulkStatus] = useState('required');
   const [bulkCopiesRequired, setBulkCopiesRequired] = useState(1);
+  const [newItemSection, setNewItemSection] = useState('General');
+  const [bulkSection, setBulkSection] = useState('General');
+  const [collapsedSections, setCollapsedSections] = useState(() => new Set());
   const [draggedItemId, setDraggedItemId] = useState(null);
   const [isEditingScholarshipNote, setIsEditingScholarshipNote] = useState(false);
   const [editedScholarshipNote, setEditedScholarshipNote] = useState(scholarship?.note || '');
@@ -42,9 +46,7 @@ const ChecklistView = ({
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  const completedCount = checklistItems.filter(item => item.checked).length;
-  const totalCount = checklistItems.length;
-  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const progress = computeChecklistProgress(checklistItems);
 
   const handleAddItem = async () => {
     if (newItemText.trim() && !isSubmittingRef.current) {
@@ -56,14 +58,17 @@ const ChecklistView = ({
           text: newItemText.trim(),
           checked: false,
           note: '',
+          section: newItemSection.trim() || 'General',
           order: maxOrder + 1,
           required,
           conditional: !required,
           copies_required: Math.max(1, Number(newItemCopiesRequired) || 1),
+          priority: 3,
         });
         setNewItemText('');
         setNewItemStatus('required');
         setNewItemCopiesRequired(1);
+        setNewItemSection('General');
         setIsAddingItem(false);
       } finally {
         isSubmittingRef.current = false;
@@ -107,10 +112,12 @@ const ChecklistView = ({
         text,
         checked: false,
         note: '',
+        section: bulkSection.trim() || 'General',
         order: maxOrder + index + 1,
         required,
         conditional: !required,
         copies_required: normalizedCopies,
+        priority: 3,
       }));
 
       if (onCreateItemsBulk) {
@@ -124,6 +131,7 @@ const ChecklistView = ({
       setBulkInputText('');
       setBulkStatus('required');
       setBulkCopiesRequired(1);
+      setBulkSection('General');
       setIsAddingBulkItems(false);
     } finally {
       isSubmittingRef.current = false;
@@ -169,8 +177,10 @@ const ChecklistView = ({
       return;
     }
 
+    const targetSection = items[targetIndex].section || 'General';
     const [removed] = items.splice(draggedIndex, 1);
-    items.splice(targetIndex, 0, removed);
+    const movedItem = { ...removed, section: targetSection };
+    items.splice(targetIndex, 0, movedItem);
 
     const reorderedItems = items.map((item, index) => ({ ...item, order: index }));
     
@@ -223,8 +233,32 @@ const ChecklistView = ({
     return null;
   }
 
+  const sectionNames = [];
+  const itemsBySection = new Map();
+  for (const it of checklistItems) {
+    const key = it.section || 'General';
+    if (!itemsBySection.has(key)) {
+      itemsBySection.set(key, []);
+      sectionNames.push(key);
+    }
+    itemsBySection.get(key).push(it);
+  }
+
+  const toggleSection = (name) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+  };
+
+  const isItemCompleted = (i) => (i.taskStatus || (i.checked ? 'completed' : 'pending')) === 'completed';
+
   return (
     <div className="max-w-3xl mx-auto">
+      <datalist id="checklist-sections">
+        {sectionNames.map((name) => <option key={name} value={name} />)}
+      </datalist>
       <button
         onClick={onBack}
         className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors mb-6"
@@ -329,16 +363,20 @@ const ChecklistView = ({
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Progress</h3>
           <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-            {completedCount} of {totalCount} items completed
+            {progress.requiredTotal > 0
+              ? `${progress.requiredDone} of ${progress.requiredTotal} required complete`
+              : `${progress.overallDone} of ${progress.overallTotal} items complete`}
           </span>
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
           <div
             className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
+            style={{ width: `${progress.requiredTotal > 0 ? progress.requiredPercent : progress.overallPercent}%` }}
           ></div>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-right">{progress}% complete</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-right">
+          {progress.overallDone} of {progress.overallTotal} total ({progress.overallPercent}%)
+        </p>
       </div>
 
       <div className="mb-4">
@@ -382,6 +420,18 @@ const ChecklistView = ({
                   min="1"
                   value={newItemCopiesRequired}
                   onChange={(e) => setNewItemCopiesRequired(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                  Section
+                </label>
+                <input
+                  type="text"
+                  list="checklist-sections"
+                  value={newItemSection}
+                  onChange={(e) => setNewItemSection(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 />
               </div>
@@ -468,6 +518,18 @@ const ChecklistView = ({
                 className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
               />
             </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                Section
+              </label>
+              <input
+                type="text"
+                list="checklist-sections"
+                value={bulkSection}
+                onChange={(e) => setBulkSection(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              />
+            </div>
           </div>
           <div className="flex gap-2 mt-3">
             <button
@@ -496,7 +558,7 @@ const ChecklistView = ({
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {checklistItems.length === 0 ? (
           <div className="text-center py-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
             <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -506,18 +568,43 @@ const ChecklistView = ({
             <p className="text-gray-500 dark:text-gray-400">Start by adding requirements or tasks for this scholarship.</p>
           </div>
         ) : (
-          checklistItems.map((item) => (
-            <ChecklistItem
-              key={item.id}
-              item={item}
-              onUpdate={onUpdateItem}
-              onDelete={onDeleteItem}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              isDragging={draggedItemId === item.id}
-            />
-          ))
+          sectionNames.map((name) => {
+            const group = itemsBySection.get(name);
+            const done = group.filter(isItemCompleted).length;
+            const collapsed = collapsedSections.has(name);
+            return (
+              <div key={name}>
+                <button
+                  onClick={() => toggleSection(name)}
+                  className="w-full flex items-center justify-between px-1 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200"
+                >
+                  <span className="flex items-center gap-2">
+                    <svg className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    {name}
+                  </span>
+                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{done}/{group.length}</span>
+                </button>
+                {!collapsed && (
+                  <div className="space-y-3 mt-2">
+                    {group.map((item) => (
+                      <ChecklistItem
+                        key={item.id}
+                        item={item}
+                        onUpdate={onUpdateItem}
+                        onDelete={onDeleteItem}
+                        onDragStart={handleDragStart}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        isDragging={draggedItemId === item.id}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

@@ -352,7 +352,11 @@ function App() {
 
   const handleUpdateChecklistItem = useCallback(async (id, data) => {
     try {
-      await updateChecklistItem(id, data);
+      const payload = { ...data };
+      if (data.taskStatus) {
+        payload.checked = data.taskStatus === 'completed';
+      }
+      await updateChecklistItem(id, payload);
       if (currentChecklistScholarship) {
         const items = await getChecklistItems(currentChecklistScholarship.id);
         setChecklistItems(items);

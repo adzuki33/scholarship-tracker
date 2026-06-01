@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { STATUS_OPTIONS, priorityToLabel, labelToPriority, priorityBadgeClass, PRIORITY_LABELS } from '../utils/checklistMeta';
 
 const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDrop, isDragging }) => {
   const [isEditingText, setIsEditingText] = useState(false);
@@ -8,17 +9,18 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
   const [editedNote, setEditedNote] = useState(item.note);
   const [editedStatus, setEditedStatus] = useState(item.conditional ? 'conditional' : 'required');
   const [editedCopiesRequired, setEditedCopiesRequired] = useState(item.copies_required || 1);
+  const [editedPriority, setEditedPriority] = useState(priorityToLabel(item.priority));
 
   useEffect(() => {
     setEditedText(item.text);
     setEditedNote(item.note || '');
     setEditedStatus(item.conditional ? 'conditional' : 'required');
     setEditedCopiesRequired(item.copies_required || 1);
+    setEditedPriority(priorityToLabel(item.priority));
   }, [item]);
 
-  const handleToggleChecked = async () => {
-    await onUpdate(item.id, { checked: !item.checked });
-  };
+  const taskStatus = item.taskStatus || (item.checked ? 'completed' : 'pending');
+  const isCompleted = taskStatus === 'completed';
 
   const handleSaveText = async () => {
     if (editedText.trim()) {
@@ -48,6 +50,7 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
       required,
       conditional: !required,
       copies_required: Math.max(1, Number(editedCopiesRequired) || 1),
+      priority: labelToPriority(editedPriority),
     });
     setIsEditingMeta(false);
   };
@@ -55,6 +58,7 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
   const handleCancelMeta = () => {
     setEditedStatus(item.conditional ? 'conditional' : 'required');
     setEditedCopiesRequired(item.copies_required || 1);
+    setEditedPriority(priorityToLabel(item.priority));
     setIsEditingMeta(false);
   };
 
@@ -76,6 +80,7 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
       setEditedNote(item.note);
       setEditedStatus(item.conditional ? 'conditional' : 'required');
       setEditedCopiesRequired(item.copies_required || 1);
+      setEditedPriority(priorityToLabel(item.priority));
     }
   };
 
@@ -93,21 +98,16 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
       className={`bg-white dark:bg-gray-800 border ${isDragging ? 'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'} rounded-lg p-4 hover:shadow-sm transition-shadow duration-200`}
     >
       <div className="flex items-start gap-3">
-        <button
-          onClick={handleToggleChecked}
-          className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-1 dark:focus:ring-offset-gray-800 ${
-            item.checked
-              ? 'bg-blue-600 dark:bg-blue-500 border-blue-600 dark:border-blue-500'
-              : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-          }`}
-          aria-label={item.checked ? 'Mark as incomplete' : 'Mark as complete'}
+        <select
+          value={taskStatus}
+          onChange={(e) => onUpdate(item.id, { taskStatus: e.target.value })}
+          aria-label="Item status"
+          className="mt-0.5 flex-shrink-0 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
         >
-          {item.checked && (
-            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
-          )}
-        </button>
+          {STATUS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
 
         <div className="flex-1 min-w-0">
           {isEditingText ? (
@@ -134,7 +134,7 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
           ) : (
             <p
               onClick={() => setIsEditingText(true)}
-              className={`text-sm font-medium cursor-pointer ${item.checked ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-900 dark:text-white'}`}
+              className={`text-sm font-medium cursor-pointer ${isCompleted ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-900 dark:text-white'}`}
             >
               {item.text}
             </p>
@@ -163,6 +163,18 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
                   className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Priority</label>
+                <select
+                  value={editedPriority}
+                  onChange={(e) => setEditedPriority(e.target.value)}
+                  className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  {PRIORITY_LABELS.map((label) => (
+                    <option key={label} value={label}>{label}</option>
+                  ))}
+                </select>
+              </div>
               <div className="sm:col-span-2 flex gap-2">
                 <button
                   onClick={handleSaveMeta}
@@ -185,6 +197,9 @@ const ChecklistItem = ({ item, onUpdate, onDelete, onDragStart, onDragOver, onDr
               </span>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
                 Copies: {item.copies_required || 1}
+              </span>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${priorityBadgeClass(item.priority)}`}>
+                {priorityToLabel(item.priority)}
               </span>
               <button
                 onClick={() => setIsEditingMeta(true)}
