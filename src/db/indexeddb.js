@@ -1,5 +1,5 @@
 const DB_NAME = 'ScholarshipTrackerDB';
-const DB_VERSION = 10;
+const DB_VERSION = 11;
 const STORE_NAME = 'scholarships';
 const CHECKLIST_STORE_NAME = 'checklistItems';
 const DOCUMENTS_STORE_NAME = 'documents';
@@ -105,6 +105,7 @@ const normalizeChecklistItem = (item) => {
     ...item,
     scholarshipId: item.scholarshipId ?? null,
     note: typeof item.note === 'string' ? item.note : '',
+    section: (typeof item.section === 'string' && item.section.trim()) ? item.section.trim() : 'General',
     required,
     conditional,
     copies_required,
@@ -305,6 +306,26 @@ export const initDB = () => {
           const value = cursor.value;
           if (value.outcome === undefined || value.interviewDate === undefined) {
             cursor.update(normalizeScholarship(value));
+          }
+
+          cursor.continue();
+        };
+      }
+
+      if (oldVersion < 11 && transaction && db.objectStoreNames.contains(CHECKLIST_STORE_NAME)) {
+        const checklistStore = transaction.objectStore(CHECKLIST_STORE_NAME);
+        const cursorRequest = checklistStore.openCursor();
+
+        cursorRequest.onsuccess = (cursorEvent) => {
+          const cursor = cursorEvent.target.result;
+          if (!cursor) {
+            return;
+          }
+
+          const value = cursor.value;
+          const normalized = normalizeChecklistItem(value);
+          if (value.section !== normalized.section) {
+            cursor.update(normalized);
           }
 
           cursor.continue();
@@ -588,6 +609,7 @@ export const createChecklistItem = (scholarshipId, data) => {
         text: data.text,
         checked: data.checked || false,
         note: data.note || '',
+        section: data.section,
         order: data.order || 0,
         required: data.required,
         conditional: data.conditional,
@@ -815,6 +837,7 @@ export const reorderChecklistItems = (scholarshipId, items) => {
           const updated = normalizeChecklistItem({
             ...existing,
             order: index,
+            section: item.section ?? existing.section,
             updatedAt: new Date().toISOString()
           });
 
@@ -862,6 +885,7 @@ export const createChecklistItemsBulk = (scholarshipId, itemsData) => {
           text: item.text.trim(),
           checked: Boolean(item.checked),
           note: typeof item.note === 'string' ? item.note : '',
+          section: item.section,
           required: item.required,
           conditional: item.conditional,
           copies_required: item.copies_required,
@@ -907,6 +931,7 @@ export const createChecklistItemsBulk = (scholarshipId, itemsData) => {
             text: item.text,
             checked: item.checked,
             note: item.note,
+            section: item.section,
             required: item.required,
             conditional: item.conditional,
             copies_required: item.copies_required,
